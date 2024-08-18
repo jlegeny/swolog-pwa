@@ -122,4 +122,29 @@ export class IDB {
     });
   }
 
+  async insertOrUpdate<T>(storeName: string, entry: T): Promise<void> {
+    if (!this.db) {
+      try {
+        await this.open();
+      } catch(e: unknown) {
+        console.error("Error opening database.");
+        return Promise.reject(e);
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(storeName, "readwrite");
+      const objectStore = transaction.objectStore(storeName);
+      const request = objectStore.put(entry);
+  
+      request.onsuccess = () => {
+        resolve();
+      };
+  
+      request.onerror = (event) => {
+        reject((event.target as IDBRequest).error);
+      };
+    });
+  }
+
 }

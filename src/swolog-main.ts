@@ -59,7 +59,7 @@ export class SwologMain extends LitElement {
     `;
   }
 
-  protected override async firstUpdated(_changedProperties: PropertyValues): void {
+  protected override async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
     if (location.hash) {
       const logId = location.hash.replace(/^#/, '');
       console.debug(`Loading workout log ${logId}`);

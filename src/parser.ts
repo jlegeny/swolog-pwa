@@ -17,9 +17,14 @@ export function date(
 }
 */
 
-export function parseLog(log: Log): {sessions: Session[], errors: Map<number, string>} {
+export interface ParsingMetadata {
+  lastSessionStartLine?: number;
+}
+
+export function parseLog(log: Log): {sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata} {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
+  const metadata: ParsingMetadata = {};
 
   console.debug(`Parsing log ${log.id}`);
 
@@ -38,6 +43,7 @@ export function parseLog(log: Log): {sessions: Session[], errors: Map<number, st
     }
     const matchDate = RE_DATE.exec(line);
     if (matchDate) {
+      metadata.lastSessionStartLine = lineNumber - 1;
       console.info(`Matched Date at line ${lineNumber}`, matchDate);
     }
     /*
@@ -73,7 +79,7 @@ export function parseLog(log: Log): {sessions: Session[], errors: Map<number, st
       */
   }
 
-  return { sessions, errors };
+  return { sessions, errors, metadata };
 }
 
 

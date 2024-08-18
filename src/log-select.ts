@@ -1,6 +1,7 @@
 import { LitElement, css, html } from 'lit'
 import { customElement, queryAsync, state } from 'lit/decorators.js'
 import { consume } from '@lit/context';
+
 import { type IDB, dbContext } from './indexdb-context';
 import { Task } from '@lit/task';
 import { Log } from './data';
@@ -17,7 +18,7 @@ export class LogSelect extends LitElement {
   @state()
   private db?: IDB;
 
-  @state() private logId: string | undefined;
+  @state() private logId?: string;
 
   @queryAsync('#new-log-name') newLogNameInput?: HTMLInputElement;
 
