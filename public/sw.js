@@ -2,8 +2,8 @@ var cacheName = 'hello-pwa';
 var filesToCache = [
   '/',
   '/index.html',
-  '/vite.svg',
-  '/src/swolog-main.ts'
+  '/src/swolog-main.ts',
+  '/assets/index.js',
 ];
 
 /* Start the service worker and cache all of the app's content */
