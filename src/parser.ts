@@ -1,21 +1,22 @@
 import { Log, Session, Lift } from './data';
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
 
-/*
-export function date(
-  from match: Regex<
-    Regex<(Substring, year: Substring, month: Substring, day: Substring)>.RegexOutput
-  >.Match
-) -> Date? {
-  var components = DateComponents()
-  components.year = Int(match.year)
-  components.month = Int(match.month)
-  components.day = Int(match.day)
-  components.timeZone = Calendar.current.timeZone
-  return Calendar.current.date(from: components)
+enum ParseErrorType {
+  INVALID_SHORTHAND = "Invalid Shorthand",
+  INVALID_WEIGHT = "Invalid Weight",
 }
-*/
+
+class ParseError extends Error {
+  constructor(readonly type: ParseErrorType, msg: string) {
+      super(msg);
+      Object.setPrototypeOf(this, ParseError.prototype);
+  }
+  toString() {
+    return this.type;
+  }
+}
 
 export interface ParsingMetadata {
   lastSessionStartLine?: number;
@@ -31,179 +32,112 @@ export function parseLog(log: Log): {sessions: Session[], errors: Map<number, st
   const lines = log.text.split('\n');
 
   let currentDate: Date | undefined = undefined
-  let currentOrder = 1
+  let currentSession: Session | undefined =  undefined;
 
   let lineNumber = 0
 
   lines:
   for (const line of lines) {
     lineNumber++;
+
+    // Filter out empty lines.
+    if (!line.length) {
+      continue lines;
+    }
+
+    // Filter out comments.
     if (line.match(/^#/)) {
       continue lines;
     }
+    
+    // Match dates.
     const matchDate = RE_DATE.exec(line);
     if (matchDate) {
       metadata.lastSessionStartLine = lineNumber - 1;
-      console.info(`Matched Date at line ${lineNumber}`, matchDate);
+      console.debug(`Matched Date at line ${lineNumber}`, matchDate);
+      const date = new Date(Date.parse(line));
+      if (!date) {
+        console.error(`Failed to parse date [${line}]`);
+        continue lines;
+      }
+      currentSession = {
+        date,
+        lifts: [],
+      }
+      sessions.push(currentSession)
+      currentDate = date;
+      continue lines;
     }
-    /*
-    if (line.match(RE_DATE)) {
-      guard let parsedDate = date(from: match) else {
-        continue lines
-      }
-      currentDate = parsedDate
-      currentOrder = 1
-      logger.debug("Parsing date \(currentDate?.formatted() ?? "")")
-    } else {
-      guard let currentDate = currentDate else {
-        errors[index] = "Uknown date for lift"
-        logger.warning("Unknown date for lift \(line)")
-        continue lines
-      }
-      do {
-        let lift = try parseLift(line: line)
-        lift.date = currentDate
-        lift.order = currentOrder
-        currentOrder += 1
-        lifts.append(lift)
-      } catch ParseError.parseLiftError(let kind, let string) {
-        errors[index] = "\(kind.rawValue) \(string)"
-        logger.warning("\(kind.rawValue) \(string)")
-        continue lines
-      } catch {
-        errors[index] = "\(error)"
-        logger.warning("\(error)")
-        continue lines
+    
+    // Match lifts.
+    if (currentDate === undefined) {
+      errors.set(lineNumber, "Unknown date for lift");
+      console.warn(`Uknown date for lift ${line}`);
+      continue lines;
+    }
+    
+    try {
+      const lift = parseLift(line);
+      currentSession?.lifts.push(lift);
+      console.debug(`Parsed lift`, lift);
+    } catch (e: unknown) {
+      if (e instanceof ParseError) {
+        console.error(`Parsing error on line ${lineNumber} : ${e.toString()}`);
+        errors.set(lineNumber, e.toString());
+      } else {
+        console.error(e);
       }
     }
-      */
   }
 
   return { sessions, errors, metadata };
 }
 
 
-/*
-import Foundation
-import OSLog
-
-enum ParseLiftErrorKind: String {
-  case invalidShorthand = "Invalid Shorthand"
-  case invalidWeight = "Invalid Weight"
-}
-
-enum ParseError: Error {
-  case parseLiftError(kind: ParseLiftErrorKind, string: String)
-}
-
-public let RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/
-public let RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/
-
-func date(
-  from match: Regex<
-    Regex<(Substring, year: Substring, month: Substring, day: Substring)>.RegexOutput
-  >.Match
-) -> Date? {
-  var components = DateComponents()
-  components.year = Int(match.year)
-  components.month = Int(match.month)
-  components.day = Int(match.day)
-  components.timeZone = Calendar.current.timeZone
-  return Calendar.current.date(from: components)
-}
-
-func parse(log: Log) -> ([Lift], [Int: String]) {
-  let logger = Logger()
-  var lifts = [Lift]()
-  var errors = [Int: String]()
-
-  logger.debug("Parsing log '\(log.name)'")
-
-  let lines = log.text.split { $0.isNewline }
-
-  var currentDate: Date? = nil
-  var currentOrder = 1
-
-  lines: for (index, line) in lines.enumerated() {
-    if line.starts(with: /#/) {
-      continue lines
-    } else if let match = line.wholeMatch(of: RE_DATE) {
-      guard let parsedDate = date(from: match) else {
-        continue lines
-      }
-      currentDate = parsedDate
-      currentOrder = 1
-      logger.debug("Parsing date \(currentDate?.formatted() ?? "")")
-    } else {
-      guard let currentDate = currentDate else {
-        errors[index] = "Uknown date for lift"
-        logger.warning("Unknown date for lift \(line)")
-        continue lines
-      }
-      do {
-        let lift = try parseLift(line: line)
-        lift.date = currentDate
-        lift.order = currentOrder
-        currentOrder += 1
-        lifts.append(lift)
-      } catch ParseError.parseLiftError(let kind, let string) {
-        errors[index] = "\(kind.rawValue) \(string)"
-        logger.warning("\(kind.rawValue) \(string)")
-        continue lines
-      } catch {
-        errors[index] = "\(error)"
-        logger.warning("\(error)")
-        continue lines
-      }
-    }
+function parseLift(line: string): Lift {
+  let str = line;
+  console.debug(`Parsing lift [${str}]`);
+  
+  let isSuperSet = false;
+  if (str.match(/^SS /)) {
+    console.debug(` .. is a superset.`);
+    isSuperSet = true;
+    str = str.slice(3);
+    console.debug(` .. remaining match [${str}]`);
   }
 
-  return (lifts, errors)
-}
-
-func parseLift(line: Substring) throws -> Lift {
-  let logger = Logger()
-
-  var str = line
-
-  var isSuperSet = false
-  if let match = str.prefixMatch(of: /SS\ /) {
-    isSuperSet = false
-    str = str[match.range.upperBound...]
+  const match = /(?<shorthand>\w+)\ /.exec(str);
+  if (!match) {
+    throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
 
-  guard let match = str.prefixMatch(of: /(?<shorthand>\w+)\ /) else {
-    throw ParseError.parseLiftError(kind: .invalidShorthand, string: String(line))
-  }
-  let shorthand = match.shorthand
+  const shorthand = match.groups?.shorthand ?? "ERROR";
+  const work = str.slice(match[0].length);
 
-  logger.debug("Parsing lift '\(shorthand)'")
-  let work = line[match.range.upperBound...]
-  logger.debug("Left to parse '\(work)'")
-
-  var lift = Lift(shorthand: String(shorthand), work: String(work))
-
-  // Split the remaining string by ; which delimit sets with different weights
-  let groups = work.split(separator: ";")
-  for group in groups {
-    let str = group.trimmingCharacters(in: .whitespaces)
+  let groups = work.split(/;/);
+  group:
+  for (const group of groups) {
+    let str = group.trim();
     // Split of the first blob without spaces, this is the group of weights
-    guard let match = str.prefixMatch(of: /[^ ]+/) else {
+    let match = str.match(/^[^ ]+/);
+    if (!match) {
       // This means an empty weight group
-      continue
+      continue group;
     }
     // Now split the group of weights by /
-    let groupWeights = match.output
-    let weights = groupWeights.split(separator: "/")
-    for weight in weights {
-      guard let match = weight.prefixMatch(of: RE_WEIGHT) else {
-        throw ParseError.parseLiftError(kind: .invalidWeight, string: String(str))
+    let groupWeights = match[0];
+    let weights = groupWeights.split(/\//);
+    for (const weight of weights) {
+      const match = RE_WEIGHT.exec(weight);
+      if (!match) { 
+        throw new ParseError(ParseErrorType.INVALID_WEIGHT, weight);
       }
-      logger.debug("Weight \(match.output.weight)")
+      console.debug(`Weight ${match.groups?.weight}`);
     }
   }
 
-  return lift
+  return {
+    shorthand,
+    work,
+  }
 }
-
-*/

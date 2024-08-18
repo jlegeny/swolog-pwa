@@ -12,5 +12,5 @@ export interface Session {
 
 export interface Lift {
   shorthand: string;
-  text: string;
+  work: string;
 }
