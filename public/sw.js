@@ -2,7 +2,8 @@ var cacheName = 'hello-pwa';
 var filesToCache = [
   '/',
   '/index.html',
-  '/vite.svg'
+  '/vite.svg',
+  '/src/swolog-main.ts'
 ];
 
 /* Start the service worker and cache all of the app's content */
@@ -18,7 +19,16 @@ self.addEventListener('install', function(e) {
 self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(response) {
-      return response || fetch(e.request);
+      if (response) {
+        return response;
+      }
+      try {
+        return fetch(e.request);
+      } catch (e) {
+        console.error(e);
+      }
+    }).catch(function (error) {
+      console.error('Cache miss', e);
     })
   );
 });

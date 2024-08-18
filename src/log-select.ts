@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit'
-import { customElement, property, queryAsync, state } from 'lit/decorators.js'
+import { customElement, queryAsync, state } from 'lit/decorators.js'
 import { consume } from '@lit/context';
-import { type IDB, dbContext } from './indexdb-context.js';
+import { type IDB, dbContext } from './indexdb-context';
 import { Task } from '@lit/task';
 import { Log } from './data';
 
@@ -86,7 +86,6 @@ export class LogSelect extends LitElement {
       composed: true,
     };
     this.dispatchEvent(new CustomEvent('selected-log', options));
-
   }
 
   private _listLogsTask = new Task(this, {

@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, css, html, PropertyValues } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { provide } from '@lit/context';
 
@@ -39,20 +39,36 @@ export class SwologMain extends LitElement {
 
   private renderStatus() {
     if (this.currentLog === undefined) {
-      return html`<h1>Swolog</h1>`;
+      return html`<header><h1>Swolog </h1></header>`;
     }
     return html`<h1>Swolog : ${this.currentLog.id}</h1><button
-    @click=${() => this.currentLog = undefined}
+    @click=${() => {
+        this.currentLog = undefined;
+        history.pushState(null, '', '/');
+      }}
     >Close</button>`
   }
 
   private renderLogSelect() {
     return html`
       <log-select @selected-log=${(e: { detail: { log: Log } }) => {
-        console.info(`Selected workout ${e.detail.log.id}`);
-      this.currentLog = e.detail.log;
+        console.debug(`Selected workout ${e.detail.log.id}`);
+        this.currentLog = e.detail.log;
+        history.pushState(null, '', `#${this.currentLog.id}`);
       }}></log-select>
     `;
+  }
+
+  protected override async firstUpdated(_changedProperties: PropertyValues): void {
+    if (location.hash) {
+      const logId = location.hash.replace(/^#/, '');
+      console.debug(`Loading workout log ${logId}`);
+      const log = await this.db.selectById<Log>('Log', logId);
+      console.debug(`Loaded`, log);
+      if (log) {
+        this.currentLog = log;
+      }
+    }
   }
 }
 

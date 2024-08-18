@@ -1,7 +1,7 @@
 import { LitElement, PropertyValues, css, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 
-import { parseLog} from './parser';
+import { parseLog } from './parser';
 import { Log } from './data';
 import './card-container';
 
@@ -11,7 +11,7 @@ import './card-container';
 @customElement('workout-view')
 export class WorkoutView extends LitElement {
 
-  @property() log!: Log;
+  @property({attribute: false}) log!: Log;
 
   @state() historyLog: string = '';
   @state() currentLog: string = '';

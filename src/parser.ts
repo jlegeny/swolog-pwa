@@ -37,7 +37,9 @@ export function parseLog(log: Log): {sessions: Session[], errors: Map<number, st
       continue lines;
     }
     const matchDate = RE_DATE.exec(line);
-    console.info(`Matched Date at line ${lineNumber}`, matchDate);
+    if (matchDate) {
+      console.info(`Matched Date at line ${lineNumber}`, matchDate);
+    }
     /*
     if (line.match(RE_DATE)) {
       guard let parsedDate = date(from: match) else {
