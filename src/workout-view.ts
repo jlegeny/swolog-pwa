@@ -1,10 +1,11 @@
-import { LitElement, PropertyValues, css, html } from 'lit'
+import { LitElement, css, html } from 'lit'
 import { customElement, property, state, queryAsync } from 'lit/decorators.js'
 import { consume } from '@lit/context';
+import { Task } from '@lit/task';
 
 import { type IDB, dbContext } from './indexdb-context';
-import { parseLog, ParsingMetadata } from './parser';
-import { Log, Session } from './data';
+import { parseLog} from './parser';
+import { Log} from './data';
 
 import './card-container';
 
@@ -23,15 +24,25 @@ export class WorkoutView extends LitElement {
   @state() historyLog: string = '';
   @state() currentLog: string = '';
 
-  @queryAsync('#history') historyTextArea?: HTMLTextAreaElement;
-  @queryAsync('#current') currentTextArea?: HTMLTextAreaElement;
+  @queryAsync('#history') historyTextArea?: Promise<HTMLTextAreaElement>;
+  @queryAsync('#current') currentTextArea?: Promise<HTMLTextAreaElement>;
 
   render() {
     return html`
     <card-container>
       <button @click=${this.saveLog}>Save</button>
-      <textarea id="history" rows=20></textarea>
-      <textarea id="current" rows=10></textarea>
+      ${this._parseLogTask.render({
+        pending: () => html`
+        <textarea disabled rows=20></textarea>
+        <textarea disabled rows=10></textarea>
+        `,
+        complete: ([historyText, currentText]) =>
+      html`
+        <textarea id="history" rows=20>${historyText}</textarea>
+        <textarea id="current" rows=10>${currentText}</textarea>
+        `
+      })
+      }
     </card-container>
     `
   }
@@ -58,30 +69,22 @@ export class WorkoutView extends LitElement {
     }
   }
 
-  protected override willUpdate(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has('log')) {
-      const { sessions, errors, metadata } = parseLog(this.log);
+  private _parseLogTask = new Task(this, {
+    task: async ([log], { }) => {
+      const { sessions, errors, metadata } = await parseLog(log);
+      console.debug(sessions, errors, metadata);
       if (metadata.lastSessionStartLine) {
         const lines = this.log.text.split(/\n/);
-        this.currentLog = lines.splice(metadata.lastSessionStartLine).join('\n');
-        this.historyLog = lines.join('\n');
+        const currentText = lines.splice(metadata.lastSessionStartLine).join('\n');
+        const historyText = lines.join('\n');
+
+        return [historyText, currentText];
       } else {
-        this.historyLog = this.log.text;
+        return [log.text, ''];
       }
-
-    }
-  }
-
-  protected override async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
-    const historyTextArea = await this.historyTextArea;
-    const currentTextArea = await this.currentTextArea;
-    if (!historyTextArea || !currentTextArea) {
-      return;
-    }
-    historyTextArea.value = this.historyLog;
-    currentTextArea.value = this.currentLog;
- 
-  }
+    },
+    args: () => [this.log]
+  });
 }
 
 declare global {

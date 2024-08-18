@@ -7,7 +7,7 @@ export class IDB {
         return Promise.resolve();
       }
       const request = indexedDB.open("SwologDB", 1);
-      request.onerror = (event) => {
+      request.onerror = () => {
         reject("Error opening database.");
       };
       request.onsuccess = (event) => {

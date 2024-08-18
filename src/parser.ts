@@ -22,7 +22,7 @@ export interface ParsingMetadata {
   lastSessionStartLine?: number;
 }
 
-export function parseLog(log: Log): {sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata} {
+export async function parseLog(log: Log): Promise<{ sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata }> {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
@@ -100,8 +100,8 @@ function parseLift(line: string): Lift {
   
   let isSuperSet = false;
   if (str.match(/^SS /)) {
-    console.debug(` .. is a superset.`);
     isSuperSet = true;
+    console.debug(` .. is a superset. ${isSuperSet}`);
     str = str.slice(3);
     console.debug(` .. remaining match [${str}]`);
   }

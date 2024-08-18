@@ -20,7 +20,7 @@ export class LogSelect extends LitElement {
 
   @state() private logId?: string;
 
-  @queryAsync('#new-log-name') newLogNameInput?: HTMLInputElement;
+  @queryAsync('#new-log-name') newLogNameInput?: Promise<HTMLInputElement>;
 
   render() {
     return html`
@@ -53,7 +53,8 @@ export class LogSelect extends LitElement {
         logs?.length ? html`
           <h1>Open an existing workout</h1>
           <ul>
-            ${logs.map(log => html`<li @click=${(e: Event) => { this.logId = log.id; }}>${log.id}</li>`)}
+            ${logs.map(log => html`
+              <li @click=${() => { this.logId = log.id; }}>${log.id}</li>`)}
           </ul>
           ` : html`Logs database is empty`,
       error: (e) => html`<p>Error: ${e}</p>`
@@ -90,7 +91,7 @@ export class LogSelect extends LitElement {
   }
 
   private _listLogsTask = new Task(this, {
-    task: async ([], { signal }) => {
+    task: async ([], { }) => {
       if (!this.db) {
         throw new Error("Database not connected");
       }
