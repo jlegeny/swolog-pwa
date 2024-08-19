@@ -4,8 +4,7 @@ import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
 import { type IDB, dbContext } from './indexdb-context';
-import { parseLog} from './parser';
-import { Log} from './data';
+import { Log } from './data';
 
 import './card-container';
 
@@ -27,21 +26,25 @@ export class WorkoutView extends LitElement {
   @queryAsync('#history') historyTextArea?: Promise<HTMLTextAreaElement>;
   @queryAsync('#current') currentTextArea?: Promise<HTMLTextAreaElement>;
 
+  parser = new ComlinkWorker<typeof import("./worker-parser")>(
+    new URL("./worker-parser", import.meta.url), {}
+  );
+
   render() {
     return html`
     <card-container>
       <button @click=${this.saveLog}>Save</button>
       ${this._parseLogTask.render({
-        pending: () => html`
-        <textarea disabled rows=20></textarea>
-        <textarea disabled rows=10></textarea>
+      pending: () => html`
+        <textarea disabled rows=20>Loading...</textarea>
+        <textarea disabled rows=10>Loading...</textarea>
         `,
-        complete: ([historyText, currentText]) =>
-      html`
+      complete: ([historyText, currentText]) =>
+        html`
         <textarea id="history" rows=20>${historyText}</textarea>
         <textarea id="current" rows=10>${currentText}</textarea>
         `
-      })
+    })
       }
     </card-container>
     `
@@ -71,7 +74,7 @@ export class WorkoutView extends LitElement {
 
   private _parseLogTask = new Task(this, {
     task: async ([log], { }) => {
-      const { sessions, errors, metadata } = await parseLog(log);
+      const { sessions, errors, metadata } = await this.parser.parse(log);
       console.debug(sessions, errors, metadata);
       if (metadata.lastSessionStartLine) {
         const lines = this.log.text.split(/\n/);

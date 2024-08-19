@@ -1,4 +1,4 @@
-import { Log, Session, Lift } from './data';
+import { Log, Session, Lift } from '../data';
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
@@ -22,11 +22,12 @@ export interface ParsingMetadata {
   lastSessionStartLine?: number;
 }
 
-export async function parseLog(log: Log): Promise<{ sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata }> {
+export function parseLog(log: Log): { sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata } {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
 
+  console.group();
   console.debug(`Parsing log ${log.id}`);
 
   const lines = log.text.split('\n');
@@ -89,6 +90,7 @@ export async function parseLog(log: Log): Promise<{ sessions: Session[], errors:
       }
     }
   }
+  console.groupEnd();
 
   return { sessions, errors, metadata };
 }

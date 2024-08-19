@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa'
+import { comlink } from "vite-plugin-comlink";
 
 
 export default defineConfig({
@@ -44,6 +45,10 @@ export default defineConfig({
         }
         ]
       }
-    })
+    }),
+    comlink(),
   ],
+  worker: {
+    plugins: () => [comlink()],
+  },
 })
