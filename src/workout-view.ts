@@ -33,23 +33,23 @@ export class WorkoutView extends LitElement {
 
   render() {
     return html`
-    <card-container>
-      <button @click=${this.saveLog}>Save</button>
+    <header><button @click=${this.saveLog}>Save</button></header>
+    <main>
       ${this._parseLogTask.render({
       pending: () => html`
-        <textarea disabled rows=20>Loading...</textarea>
-        <textarea disabled rows=10>Loading...</textarea>
+        <textarea id="history" disabled>Loading...</textarea>
+        <textarea id="current" disabled>Loading...</textarea>
         `,
       complete: ([historyText, currentText]) =>
         html`
-        <textarea id="history" rows=20 @click=${async () => {
+        <textarea id="history" @selectionchange=${async () => {
             if (this.historyTextArea) {
               await this.processLineAtCursor(this.historyTextArea, false);
             }
           }} @input=${async () => {
             // TODO: Update cache with new results.
           }}>${historyText}</textarea>
-        <textarea id="current" rows=10 @click=${async () => {
+        <textarea id="current" @click=${async () => {
             if (this.currentTextArea) {
               await this.processLineAtCursor(this.currentTextArea, true);
             }
@@ -57,7 +57,7 @@ export class WorkoutView extends LitElement {
         `
     })
       }
-    </card-container>
+    </main>
     `
   }
 
@@ -65,10 +65,29 @@ export class WorkoutView extends LitElement {
   :host {
     display: block;
   }
-  card-container {
+  header {
+    background-color: var(--color-primary);
+    color: var(--text-contrast);
+    line-height: 1rem;
+  }
+  main {
+    height: calc(100% - 1rem);
     display: flex;
     flex-direction: column;
-    gap: var(--size-space-m);
+    background-color: violet;
+    textarea {
+      resize: none;
+      border: none;
+      font-family: monospace;
+      background-color: var(--color-bg-textarea);
+    }
+    #history {
+      flex: 1;
+      border-bottom: 1px solid var(--color-primary);
+    }
+    #current {
+      height: 200px;
+    }
   }
   `;
 

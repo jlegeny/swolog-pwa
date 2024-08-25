@@ -12,7 +12,7 @@ export class CardContainer extends LitElement {
       <slot></slot>
     `
   }
-
+  
   static styles = css`
     :host {
       display: block;
@@ -20,7 +20,10 @@ export class CardContainer extends LitElement {
       background-color: var(--color-bg-2);
     }
     ::slotted(h1) {
-      color: red;
+      color: var(--color-primary);
+      font-size: 1rem;
+      margin: 0;
+      text-align: center;
     }
   `;
 }

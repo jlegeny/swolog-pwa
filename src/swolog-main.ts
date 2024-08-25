@@ -33,20 +33,40 @@ export class SwologMain extends LitElement {
 
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      background: var(--color-primary);
+      color: var(--color-text-default);
+      h1 {
+        padding: 0;
+        margin: 0;
+        font-size: 1rem;
+      }
+    }
+    log-select {
+      flex: 1;
+    }
+    workout-view {
+      flex: 1;
     }
   `;
 
   private renderStatus() {
     if (this.currentLog === undefined) {
-      return html`<header><h1>Swolog </h1></header>`;
+      return html`<header><span></span><h1>Swolog</h1><span></span></header>`;
     }
-    return html`<h1>Swolog : ${this.currentLog.id}</h1><button
-    @click=${() => {
-        this.currentLog = undefined;
-        history.pushState(null, '', '/');
-      }}
-    >Close</button>`
+    return html`<header><span  @click=${() => {
+      this.currentLog = undefined;
+      history.pushState(null, '', '/');
+    }}>< Back</span><h1>Swolog</h1><span></span>
+   
+    </header>`
   }
 
   private renderLogSelect() {

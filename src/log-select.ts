@@ -39,6 +39,27 @@ export class LogSelect extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--size-space-m);
+      padding: var(--size-space-s);
+    }
+    card-container {
+      width: 100%;
+    }
+    ul {
+      padding: 0;
+      margin: 0;
+      li {
+        font-size: 1rem;
+        line-height: 2rem;
+        padding-left: var(--size-space-xs);
+        list-style: none;
+        &:nth-child(2n + 1) {
+          background: var(--color-bg-3);
+        }
+        &:last-child {
+          border-bottom-left-radius: var(--size-border);
+          border-bottom-right-radius: var(--size-border);
+        }
+      }
     }
   `;
 

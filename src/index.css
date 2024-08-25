@@ -1,3 +1,26 @@
+/* Reset */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+input, button, textarea, select {
+  font: inherit;
+}
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -13,17 +36,25 @@
   -moz-osx-font-smoothing: grayscale;
 
   --size-border: 5px;
+  --size-space-xs: 5px;
+  --size-space-s: 10px;
   --size-space-m: 20px;
   --color-text-default: #eee;
+  --color-primary: #FF6C00;
+  --color-bg-0: #121212;
   --color-bg-1: #242424;
   --color-bg-2: #323232;
+  --color-bg-3: #404040;
+  --color-bg-textarea: #242424;
 }
 
 body {
   margin: 0;
   display: flex;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
+  background: var(--color-bg-1);
+  overflow: hidden;
 }
 
 @media (prefers-color-scheme: light) {
