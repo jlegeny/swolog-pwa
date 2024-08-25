@@ -33,7 +33,10 @@ export class WorkoutView extends LitElement {
 
   render() {
     return html`
-    <header><button @click=${this.saveLog}>Save</button></header>
+    <header>
+      <span @click=${this._dispatchClosed}>&lt;Back</span>
+      <span @click=${this.saveLog}>Save</span>
+    </header>
     <main>
       ${this._parseLogTask.render({
       pending: () => html`
@@ -69,12 +72,12 @@ export class WorkoutView extends LitElement {
     background-color: var(--color-primary);
     color: var(--text-contrast);
     line-height: 1rem;
+    height: 1.5rem;
   }
   main {
     height: calc(100% - 1rem);
     display: flex;
     flex-direction: column;
-    background-color: violet;
     textarea {
       resize: none;
       border: none;
@@ -128,6 +131,14 @@ export class WorkoutView extends LitElement {
     } catch (e: unknown) {
       console.error(e);
     }
+  }
+
+  private _dispatchClosed() {
+    const options = {
+      bubbles: true,
+      composed: true,
+    };
+    this.dispatchEvent(new CustomEvent('close', options));
   }
 
   private _parseLogTask = new Task(this, {

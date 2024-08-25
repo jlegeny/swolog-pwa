@@ -5,6 +5,9 @@ import { consume } from '@lit/context';
 import { type IDB, dbContext } from './indexdb-context';
 import { Task } from '@lit/task';
 import { Log } from './lib/data';
+import * as mixins from './css/mixins';
+import * as dim from './css/dimensions';
+import * as color from './css/colors';
 
 import './card-container';
 
@@ -26,7 +29,9 @@ export class LogSelect extends LitElement {
     return html`
     <card-container>
       <h1>Create a new workout log</h1>
-      <input id="new-log-name" type="text"/> <button @click=${this.createLog}>Create</button>
+      <main>
+        <input id="new-log-name" type="text"/> <button @click=${this.createLog}>Create</button>
+      </main>
     </card-container>
     <card-container>
     ${this.db ? this.renderLogs() : this.renderWaitingScreen()}
@@ -41,26 +46,38 @@ export class LogSelect extends LitElement {
       gap: var(--size-space-m);
       padding: var(--size-space-s);
     }
+    ${mixins.input}
+    ${mixins.button}
+    button {
+      width: 100%;
+    }
+
     card-container {
       width: 100%;
+    }
+    card-container main {
+      display: flex;
+      flex-direction: column;
+      gap: ${dim.spacing.s};
+      padding: ${dim.spacing.xs};
     }
     ul {
       padding: 0;
       margin: 0;
-      li {
+    }
+    ul li {
         font-size: 1rem;
         line-height: 2rem;
         padding-left: var(--size-space-xs);
         list-style: none;
-        &:nth-child(2n + 1) {
-          background: var(--color-bg-3);
+     }
+    ul li:nth-child(2n + 1) {
+          background: ${color.bg.card.alt};
         }
-        &:last-child {
+      li&:last-child {
           border-bottom-left-radius: var(--size-border);
           border-bottom-right-radius: var(--size-border);
         }
-      }
-    }
   `;
 
   private renderWaitingScreen() {

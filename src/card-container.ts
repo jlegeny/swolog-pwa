@@ -1,6 +1,9 @@
 import { LitElement, css, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
+import * as dim from './css/dimensions';
+import * as color from './css/colors';
+
 /**
  * A card element.
  */
@@ -16,11 +19,16 @@ export class CardContainer extends LitElement {
   static styles = css`
     :host {
       display: block;
-      border-radius: var(--size-border);
-      background-color: var(--color-bg-2);
+      border-radius: ${dim.radius};
+      background-color: ${color.bg.card.default};
+      box-sizing: border-box;
+      box-shadow: 0 0 10px ${color.shadow};
     }
     ::slotted(h1) {
-      color: var(--color-primary);
+      color: ${color.primary};
+      background-color: ${color.bg.card.header};
+      border-top-left-radius: ${dim.radius};
+      border-top-right-radius: ${dim.radius};
       font-size: 1rem;
       margin: 0;
       text-align: center;

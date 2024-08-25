@@ -1,4 +1,4 @@
-import { LitElement, css, html, PropertyValues } from 'lit'
+import { LitElement, css, nothing, html, PropertyValues } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { provide } from '@lit/context';
 
@@ -27,9 +27,11 @@ export class SwologMain extends LitElement {
   render() {
     return html`
       <div class="status">${this.renderStatus()}</div>
-      ${this.currentLog ? html`<workout-view .log=${this.currentLog}></workout-view>` : this.renderLogSelect()}
+      ${this.currentLog ? this.renderCurrentLog() : this.renderLogSelect()}
     `
   }
+
+
 
   static styles = css`
     :host {
@@ -43,11 +45,12 @@ export class SwologMain extends LitElement {
       justify-content: space-between;
       background: var(--color-primary);
       color: var(--color-text-default);
-      h1 {
-        padding: 0;
-        margin: 0;
-        font-size: 1rem;
-      }
+      height: 1.5rem;
+    }
+    header h1 {
+      padding: 0;
+      margin: 0;
+      font-size: 1rem;
     }
     log-select {
       flex: 1;
@@ -61,12 +64,17 @@ export class SwologMain extends LitElement {
     if (this.currentLog === undefined) {
       return html`<header><span></span><h1>Swolog</h1><span></span></header>`;
     }
-    return html`<header><span  @click=${() => {
+    return nothing;
+  }
+
+  private renderCurrentLog() {
+    if (!this.currentLog) {
+      return nothing;
+    }
+    return html`<workout-view .log=${this.currentLog} @close=${() => {
       this.currentLog = undefined;
       history.pushState(null, '', '/');
-    }}>< Back</span><h1>Swolog</h1><span></span>
-   
-    </header>`
+    }}></workout-view>`;
   }
 
   private renderLogSelect() {
