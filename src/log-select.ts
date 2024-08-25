@@ -4,7 +4,7 @@ import { consume } from '@lit/context';
 
 import { type IDB, dbContext } from './indexdb-context';
 import { Task } from '@lit/task';
-import { Log } from './data';
+import { Log } from './lib/data';
 
 import './card-container';
 

@@ -8,9 +8,13 @@ export interface Log {
 export interface Session {
   date: Date;
   lifts: Lift[];
+  startLine: number;
+  endLine: number;
 }
 
 export interface Lift {
   shorthand: string;
   work: string;
+  date?: Date;
+  line?: number;
 }

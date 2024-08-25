@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.4.4",
     "@lit/context": "^1.1.2",
     "@lit/task": "^1.0.1",
     "comlink": "^4.4.1",
@@ -17,7 +18,7 @@
   "devDependencies": {
     "typescript": "^5.5.3",
     "vite": "^5.4.1",
-    "vite-plugin-pwa": "^0.20.1",
-    "vite-plugin-comlink": "^5.0.1"
+    "vite-plugin-comlink": "^5.0.1",
+    "vite-plugin-pwa": "^0.20.1"
   }
 }

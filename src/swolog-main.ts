@@ -2,9 +2,9 @@ import { LitElement, css, html, PropertyValues } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { provide } from '@lit/context';
 
-import { IDB } from './idb';
+import { IDB } from './lib/idb';
 import { dbContext } from './indexdb-context';
-import { Log } from './data';
+import { Log } from './lib/data';
 
 import './log-select';
 import './workout-view';

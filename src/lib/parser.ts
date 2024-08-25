@@ -1,4 +1,4 @@
-import { Log, Session, Lift } from '../data';
+import { Log, Session, Lift } from './data';
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
@@ -27,8 +27,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
 
-  console.group();
-  console.debug(`Parsing log ${log.id}`);
+  console.group(`Parsing log ${log.id}`);
 
   const lines = log.text.split('\n');
 
@@ -40,6 +39,9 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
   lines:
   for (const line of lines) {
     lineNumber++;
+    if (sessions.length) {
+      sessions[sessions.length - 1].endLine += 1;
+    }
 
     // Filter out empty lines.
     if (!line.length) {
@@ -64,6 +66,12 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
       currentSession = {
         date,
         lifts: [],
+        startLine: lineNumber,
+        endLine: lineNumber,
+      }
+      if (sessions.length) {
+        // Avoid overlapping session lengths
+        sessions[sessions.length - 1].endLine -= 1;
       }
       sessions.push(currentSession)
       currentDate = date;
@@ -79,6 +87,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
     
     try {
       const lift = parseLift(line);
+      lift.line = lineNumber;
       currentSession?.lifts.push(lift);
       console.debug(`Parsed lift`, lift);
     } catch (e: unknown) {
@@ -96,7 +105,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
 }
 
 
-function parseLift(line: string): Lift {
+export function parseLift(line: string): Lift {
   let str = line;
   console.debug(`Parsing lift [${str}]`);
   
@@ -108,7 +117,7 @@ function parseLift(line: string): Lift {
     console.debug(` .. remaining match [${str}]`);
   }
 
-  const match = /(?<shorthand>\w+)\ /.exec(str);
+  const match = /(?<shorthand>\w+)\ ?/.exec(str);
   if (!match) {
     throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
