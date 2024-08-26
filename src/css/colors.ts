@@ -15,5 +15,9 @@ export const bg = {
     default: css`#282424`,
     alt: css`#322727`,
     header: css`#423737`,
-  }
+  },
+  table: {
+    default: css`#181818`,
+    alt: css`#222222`,
+  },
 }

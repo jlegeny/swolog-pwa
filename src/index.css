@@ -56,13 +56,20 @@ p, h1, h2, h3, h4, h5, h6 {
   font-style: normal;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
   background: var(--color-bg-base);
   display: flex;
   min-width: 320px;
-  height: 100vh;
   overflow: hidden;
+}
+
+swolog-main {
+  height: 85vh;
 }
 
 @media (prefers-color-scheme: light) {

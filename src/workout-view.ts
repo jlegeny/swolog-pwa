@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state, query } from 'lit/decorators.js'
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
@@ -7,8 +7,11 @@ import { type IDB, dbContext } from './indexdb-context';
 import { Lift, Log } from './lib/data';
 import { LiftCache } from './lib/lift-cache';
 import { getLineOnCursor } from './lib/textarea-utils';
+import * as mixin from './css/mixins';
+import { Higlight } from './history-log';
 
 import './card-container';
+import './history-log';
 
 /**
  * Main App element.
@@ -23,6 +26,9 @@ export class WorkoutView extends LitElement {
   @property({ attribute: false }) log!: Log;
 
   @state() cache: LiftCache = new LiftCache([]);
+  @state() selectedLift?: Lift;
+  @state() previousLift?: Lift;
+  @state() highlight: Higlight = {};
 
   @query('#history') historyTextArea?: HTMLTextAreaElement;
   @query('#current') currentTextArea?: HTMLTextAreaElement;
@@ -34,29 +40,55 @@ export class WorkoutView extends LitElement {
   render() {
     return html`
     <header>
-      <span @click=${this._dispatchClosed}>&lt;Back</span>
-      <span @click=${this.saveLog}>Save</span>
+      <div>
+        <span @click=${this._dispatchClosed}>&lt;Back</span>
+        <span @click=${this.saveLog}>Save</span>
+      </div>
     </header>
     <main>
       ${this._parseLogTask.render({
       pending: () => html`
-        <textarea id="history" disabled>Loading...</textarea>
+        <history-log></history-log>
         <textarea id="current" disabled>Loading...</textarea>
         `,
       complete: ([historyText, currentText]) =>
         html`
-        <textarea id="history" @selectionchange=${async () => {
-            if (this.historyTextArea) {
-              await this.processLineAtCursor(this.historyTextArea, false);
+        <history-log
+          .text=${historyText}
+          .highlight=${this.highlight}
+          @selected=${async (e: { detail: { line: number, text: string } }) => {
+            const { line, text } = e.detail;
+            console.log(line, text);
+            if (!text) {
+              await this.hideHints();
+              return;
             }
-          }} @input=${async () => {
-            // TODO: Update cache with new results.
-          }}>${historyText}</textarea>
-        <textarea id="current" @click=${async () => {
+            this.highlight = {
+              line
+            };
+            await this.showHints(line, text, true);
+          }}
+        ></history-log>
+        <textarea id="current"
+          @click=${async () => {
             if (this.currentTextArea) {
-              await this.processLineAtCursor(this.currentTextArea, true);
+
+              const { line, text } = getLineOnCursor(this.currentTextArea);
+              if (!text) {
+                return;
+              }
+              await this.showHints(line, text, true);
             }
-          }}>${currentText}</textarea>
+          }}
+          @blur=${() => {
+            setTimeout(() => {
+              window.scrollTo(0, 0);
+            }, 300)
+          }}
+          .value=${currentText}
+          ></textarea>
+        ${this.renderHints()}
+        <aside>(c) 2024</aside>
         `
     })
       }
@@ -67,32 +99,42 @@ export class WorkoutView extends LitElement {
   static styles = css`
   :host {
     display: block;
+    height: 100%;
   }
-  header {
-    background-color: var(--color-primary);
-    color: var(--text-contrast);
-    line-height: 1rem;
-    height: 1.5rem;
-  }
+
+  ${mixin.header}
+  ${mixin.textarea}
+
   main {
-    height: calc(100% - 1rem);
     display: flex;
     flex-direction: column;
-    textarea {
-      resize: none;
-      border: none;
-      font-family: monospace;
-      background-color: var(--color-bg-textarea);
-    }
-    #history {
-      flex: 1;
-      border-bottom: 1px solid var(--color-primary);
-    }
-    #current {
-      height: 200px;
-    }
+    height: 100%;
+  }
+
+  history-log {
+    flex: 1;
+    border-bottom: 1px solid var(--color-primary);
+  }
+  #current {
+    height: 200px;
   }
   `;
+
+  private renderHints() {
+    if (!this.selectedLift) {
+      return nothing;
+    }
+    const renderPreviousLift = () => {
+      if (!this.previousLift) {
+        return nothing;
+      }
+      return html`${this.previousLift.work}`;
+    }
+    return html`<div>
+      <div>${this.selectedLift.shorthand}</div>
+      <div>${renderPreviousLift()}</div>
+    </div>`;
+  }
 
   private async saveLog() {
     const historyText = (await this.historyTextArea)?.value ?? '';
@@ -105,11 +147,7 @@ export class WorkoutView extends LitElement {
     }
   }
 
-  private async processLineAtCursor(textArea: HTMLTextAreaElement, asOfToday: boolean) {
-    const { line, text } = getLineOnCursor(textArea);
-    if (!text) {
-      return;
-    }
+  private async showHints(line: number, text: string, asOfToday: boolean) {
     console.log(`Finding previous lift for`);
     let date: Date | undefined;
     if (asOfToday) {
@@ -125,12 +163,19 @@ export class WorkoutView extends LitElement {
     console.debug(` .. date ${date}`);
     try {
       const lift = await this.parser.parseLift(text);
+      this.selectedLift = lift;
       console.info(` .. lift ${lift.shorthand}`);
       const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
+      this.previousLift = previousLift;
       console.info(' .. found previous lift', previousLift);
     } catch (e: unknown) {
       console.error(e);
     }
+  }
+
+  private async hideHints() {
+    this.selectedLift = undefined;
+    this.previousLift = undefined;
   }
 
   private _dispatchClosed() {

@@ -5,7 +5,7 @@ import { consume } from '@lit/context';
 import { type IDB, dbContext } from './indexdb-context';
 import { Task } from '@lit/task';
 import { Log } from './lib/data';
-import * as mixins from './css/mixins';
+import * as mixin from './css/mixins';
 import * as dim from './css/dimensions';
 import * as color from './css/colors';
 
@@ -27,27 +27,48 @@ export class LogSelect extends LitElement {
 
   render() {
     return html`
+    <header>
+      <span></span><h1>Swolog</h1><span></span>
+    </header>
+    <main>
+        <aside>...</aside>
     <card-container>
       <h1>Create a new workout log</h1>
-      <main>
+      <div>
         <input id="new-log-name" type="text"/> <button @click=${this.createLog}>Create</button>
-      </main>
+      </div>
     </card-container>
     <card-container>
     ${this.db ? this.renderLogs() : this.renderWaitingScreen()}
     </card-container>
+    </main>
    `;
   }
 
   static styles = css`
     :host {
+      display: block;
+    }
+    
+    ${mixin.header}
+    ${mixin.input}
+    ${mixin.button}
+    
+    main {
       display: flex;
       flex-direction: column;
       gap: var(--size-space-m);
-      padding: var(--size-space-s);
+      padding-left: var(--size-space-s);
+      padding-right: var(--size-space-s);
+      height:100%;
     }
-    ${mixins.input}
-    ${mixins.button}
+    
+    header h1 {
+      padding: 0;
+      margin: 0;
+      font-size: 1rem;
+    }
+
     button {
       width: 100%;
     }
@@ -55,7 +76,7 @@ export class LogSelect extends LitElement {
     card-container {
       width: 100%;
     }
-    card-container main {
+    card-container div {
       display: flex;
       flex-direction: column;
       gap: ${dim.spacing.s};

@@ -11,7 +11,7 @@ input {
   width: 100%;
   padding: ${dim.spacing.xs};
   box-sizing: border-box;
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
 input:focus {
   border-color: ${color.active};
@@ -19,9 +19,20 @@ input:focus {
 }
 `;
 
+export const textarea = css`
+textarea {
+  resize: none;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: ${color.bg.input};
+  border-radius: 0;
+  font-size: 1rem;
+}
+`;
+
 export const button = css`
 button {
-  font-family: "JetBrains Mono", monospace;
+  font-family: 'JetBrains Mono', monospace;
   color: ${color.primary};
   border: 1px solid ${color.primary};
   font-size: 1rem;
@@ -38,4 +49,13 @@ button:hover {
 button:active {
   color: ${color.active};
 }
+`;
+
+export const header = css`
+  header {
+    background-color: ${color.primary};
+    user-select: none;
+    color: ${color.text.default};
+    height: 1.5rem;
+  }
 `;

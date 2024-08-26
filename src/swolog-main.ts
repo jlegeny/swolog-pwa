@@ -6,6 +6,8 @@ import { IDB } from './lib/idb';
 import { dbContext } from './indexdb-context';
 import { Log } from './lib/data';
 
+import * as color from './css/colors';
+
 import './log-select';
 import './workout-view';
 
@@ -26,12 +28,9 @@ export class SwologMain extends LitElement {
 
   render() {
     return html`
-      <div class="status">${this.renderStatus()}</div>
       ${this.currentLog ? this.renderCurrentLog() : this.renderLogSelect()}
     `
   }
-
-
 
   static styles = css`
     :host {
@@ -39,33 +38,17 @@ export class SwologMain extends LitElement {
       flex-direction: column;
       width: 100%;
       height: 100%;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      background: var(--color-primary);
-      color: var(--color-text-default);
-      height: 1.5rem;
-    }
-    header h1 {
-      padding: 0;
-      margin: 0;
-      font-size: 1rem;
+      background: black;
     }
     log-select {
       flex: 1;
+      background: ${color.bg.base};
     }
     workout-view {
       flex: 1;
+      background: ${color.bg.base};
     }
   `;
-
-  private renderStatus() {
-    if (this.currentLog === undefined) {
-      return html`<header><span></span><h1>Swolog</h1><span></span></header>`;
-    }
-    return nothing;
-  }
 
   private renderCurrentLog() {
     if (!this.currentLog) {
@@ -85,6 +68,20 @@ export class SwologMain extends LitElement {
         history.pushState(null, '', `#${this.currentLog.id}`);
       }}></log-select>
     `;
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    
+    function updateViewportHeight() {
+      const viewportHeight = window.innerHeight;
+      document.documentElement.style.setProperty('--vh', `${viewportHeight}px`);
+    }
+    
+    // Run on page load
+    updateViewportHeight();
+
+    window.addEventListener('resize', updateViewportHeight);
   }
 
   protected override async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
