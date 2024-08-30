@@ -1,7 +1,9 @@
-import { LitElement, PropertyValues, css, html, nothing } from 'lit'
+import { LitElement, PropertyValues, TemplateInstance, TemplateResult, css, html, nothing } from 'lit'
 import { customElement, property, state, query } from 'lit/decorators.js'
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
+import { Temporal } from 'temporal-polyfill'
+
 
 import { type IDB, dbContext } from './indexdb-context';
 import { Lift, Log } from './lib/data';
@@ -132,15 +134,28 @@ export class WorkoutView extends LitElement {
       }
       return html`${this.previousLift.work}`;
     }
-    let relativeTime: number|undefined = undefined;
+    
+    let relativeTime: TemplateResult| typeof nothing = nothing;
     if (this.previousLift?.date) {
-      const now = new Date();
-      now.setHours(0, 0, 0);
-      relativeTime = +now - +this.previousLift.date;
+      let timeDiff: Temporal.Duration|undefined = undefined;
+
+      const previousLiftDate = Temporal.PlainDate.from(this.previousLift.date);
+
+      const isSelectedLiftToday = Temporal.Now.plainDateISO().toString() === this.selectedLift.date;
+      if (isSelectedLiftToday) {
+        const now = Temporal.Now.plainDateISO();
+        timeDiff = previousLiftDate.until(now);
+        relativeTime = html`<div>${timeDiff.days} days ago</div>`
+      } else if (this.selectedLift.date) {
+        const selectedLiftDate = Temporal.PlainDate.from(this.selectedLift.date);
+        timeDiff = previousLiftDate.until(selectedLiftDate);
+        relativeTime = html`<div>${timeDiff.days} days before</div>`
+      }
+
     }
     return html`<card-container>
       <div>${this.selectedLift.shorthand}</div>
-      ${relativeTime ? html`<div>${Math.floor(relativeTime / 1000 / 3600 / 24)} days ago</div>` : nothing}
+      ${relativeTime}
       <div>${renderPreviousLift()}</div>
     </card-container>`;
   }
@@ -158,10 +173,9 @@ export class WorkoutView extends LitElement {
 
   private async showHints(line: number, text: string, asOfToday: boolean) {
     console.log(`Finding previous lift for`);
-    let date: Date | undefined;
+    let date: string | undefined;
     if (asOfToday) {
-      date = new Date();
-      date.setHours(0, 0, 0, 0);
+      date = Temporal.Now.plainDateISO().toString();
     } else {
       date = this.cache.getDateAtLine(line);
     }
@@ -169,12 +183,13 @@ export class WorkoutView extends LitElement {
       console.debug(` .. no date`);
       return;
     }
-    console.debug(` .. date ${date}`);
+    console.debug(` .. date ${date.toString()}`, date);
     try {
       const lift = await this.parser.parseLift(text);
       this.selectedLift = {
         ...lift,
         line,
+        date,
       };
       console.info(` .. lift ${lift.shorthand} ${date}`);
       const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
@@ -211,7 +226,7 @@ export class WorkoutView extends LitElement {
       if (!lastSession || !metadata.lastSessionStartLine) {
         return [log.text, ''];
       }
-      const isToday = (new Date()).setHours(0, 0, 0, 0) == lastSession.date.setHours(0, 0, 0, 0);
+      const isToday = Temporal.Now.plainDateISO().toString() === lastSession.date;
       if (!isToday) {
         return [log.text, ''];
       }

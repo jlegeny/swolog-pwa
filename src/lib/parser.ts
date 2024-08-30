@@ -31,7 +31,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
 
   const lines = log.text.split('\n');
 
-  let currentDate: Date | undefined = undefined
+  let currentDate: string | undefined = undefined
   let currentSession: Session | undefined =  undefined;
 
   let lineNumber = 0
@@ -58,7 +58,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
     if (matchDate) {
       metadata.lastSessionStartLine = lineNumber - 1;
       console.debug(`Matched Date at line ${lineNumber}`, matchDate);
-      const date = new Date(Date.parse(line));
+      const date = line.trim();
       if (!date) {
         console.error(`Failed to parse date [${line}]`);
         continue lines;

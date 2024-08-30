@@ -1,3 +1,5 @@
+import { Temporal } from 'temporal-polyfill'
+
 import {Lift, Log, Session} from './data';
 import './utils';
 
@@ -23,7 +25,7 @@ export class LiftCache {
     return this.sessions[this.sessions.length - 1];
   }
 
-  getDateAtLine = (line: number): Date | undefined => {
+  getDateAtLine = (line: number): string | undefined => {
     for (const session of this.sessions) {
       if (session.startLine <= line && line <= session.endLine) {
         return session.date;
@@ -32,13 +34,11 @@ export class LiftCache {
     return undefined;
   }
 
-  findPreviousLift = (shorthand: string, date: Date): Lift | undefined => {
+  findPreviousLift = (shorthand: string, date: string): Lift | undefined => {
     const history = this.shorthandToAllLifts.get(shorthand);
     if (!history) {
       return undefined;
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     for (const lift of history.reversed()) {
       if (!lift.date) {

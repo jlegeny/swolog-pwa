@@ -6,7 +6,7 @@ export interface Log {
 }
 
 export interface Session {
-  date: Date;
+  date: string;
   lifts: Lift[];
   startLine: number;
   endLine: number;
@@ -15,6 +15,6 @@ export interface Session {
 export interface Lift {
   shorthand: string;
   work: string;
-  date?: Date;
+  date?: string;
   line?: number;
 }
