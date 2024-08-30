@@ -31,16 +31,16 @@ export class LogSelect extends LitElement {
       <span></span><h1>Swolog</h1><span></span>
     </header>
     <main>
-        <aside>...</aside>
-    <card-container>
-      <h1>Create a new workout log</h1>
-      <div>
-        <input id="new-log-name" type="text"/> <button @click=${this.createLog}>Create</button>
-      </div>
-    </card-container>
-    <card-container>
-    ${this.db ? this.renderLogs() : this.renderWaitingScreen()}
-    </card-container>
+      <aside>...</aside>
+      <card-container>
+        <h1>Create a new workout log</h1>
+        <div>
+          <input id="new-log-name" type="text" placeholder="Log Name..."/> <button @click=${this.createLog}>Create</button>
+        </div>
+      </card-container>
+      <card-container>
+        ${this.db ? this.renderLogs() : this.renderWaitingScreen()}
+      </card-container>
     </main>
    `;
   }

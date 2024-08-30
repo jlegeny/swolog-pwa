@@ -1,4 +1,4 @@
-import { LitElement, css, html, nothing } from 'lit'
+import { LitElement, PropertyValues, css, html, nothing } from 'lit'
 import { customElement, property, state, query } from 'lit/decorators.js'
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
@@ -8,7 +8,9 @@ import { Lift, Log } from './lib/data';
 import { LiftCache } from './lib/lift-cache';
 import { getLineOnCursor } from './lib/textarea-utils';
 import * as mixin from './css/mixins';
-import { Higlight } from './history-log';
+import * as color from './css/colors';
+import * as dim from './css/dimensions';
+import { Highlight, HistoryLog } from './history-log';
 
 import './card-container';
 import './history-log';
@@ -28,9 +30,9 @@ export class WorkoutView extends LitElement {
   @state() cache: LiftCache = new LiftCache([]);
   @state() selectedLift?: Lift;
   @state() previousLift?: Lift;
-  @state() highlight: Higlight = {};
+  @state() highlight: Highlight = {};
 
-  @query('#history') historyTextArea?: HTMLTextAreaElement;
+  @query('history-log') historyLog?: HistoryLog;
   @query('#current') currentTextArea?: HTMLTextAreaElement;
 
   parser = new ComlinkWorker<typeof import("./worker-parser")>(
@@ -63,10 +65,7 @@ export class WorkoutView extends LitElement {
               await this.hideHints();
               return;
             }
-            this.highlight = {
-              line
-            };
-            await this.showHints(line, text, true);
+            await this.showHints(line, text, false);
           }}
         ></history-log>
         <textarea id="current"
@@ -113,10 +112,13 @@ export class WorkoutView extends LitElement {
 
   history-log {
     flex: 1;
-    border-bottom: 1px solid var(--color-primary);
+    border-bottom: 1px solid ${color.primary};
   }
   #current {
     height: 200px;
+  }
+  card-container {
+    padding: ${dim.spacing.xs};
   }
   `;
 
@@ -130,14 +132,21 @@ export class WorkoutView extends LitElement {
       }
       return html`${this.previousLift.work}`;
     }
-    return html`<div>
+    let relativeTime: number|undefined = undefined;
+    if (this.previousLift?.date) {
+      const now = new Date();
+      now.setHours(0, 0, 0);
+      relativeTime = +now - +this.previousLift.date;
+    }
+    return html`<card-container>
       <div>${this.selectedLift.shorthand}</div>
+      ${relativeTime ? html`<div>${Math.floor(relativeTime / 1000 / 3600 / 24)} days ago</div>` : nothing}
       <div>${renderPreviousLift()}</div>
-    </div>`;
+    </card-container>`;
   }
 
   private async saveLog() {
-    const historyText = (await this.historyTextArea)?.value ?? '';
+    const historyText = this.historyLog?.text ?? '';
     const currentText = (await this.currentTextArea)?.value ?? '';
     this.log.text = `${historyText}\n${currentText}`;
     try {
@@ -163,8 +172,11 @@ export class WorkoutView extends LitElement {
     console.debug(` .. date ${date}`);
     try {
       const lift = await this.parser.parseLift(text);
-      this.selectedLift = lift;
-      console.info(` .. lift ${lift.shorthand}`);
+      this.selectedLift = {
+        ...lift,
+        line,
+      };
+      console.info(` .. lift ${lift.shorthand} ${date}`);
       const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
       this.previousLift = previousLift;
       console.info(' .. found previous lift', previousLift);
@@ -212,10 +224,10 @@ export class WorkoutView extends LitElement {
     args: () => [this.log]
   });
 
-  override updated() {
-    if (this.historyTextArea) {
-      this.historyTextArea.scrollTop = this.historyTextArea.scrollHeight;
-    }
+  protected override willUpdate(_changedProperties: PropertyValues): void {
+    this.highlight = {
+      line: this.selectedLift?.line
+    };
   }
 }
 

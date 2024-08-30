@@ -35,6 +35,7 @@ button {
   font-family: 'JetBrains Mono', monospace;
   color: ${color.primary};
   border: 1px solid ${color.primary};
+  background-color: ${color.bg.base};
   font-size: 1rem;
   box-shadow: 4px 4px ${color.shadow};
   line-height: 1.5rem;
