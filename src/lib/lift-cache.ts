@@ -1,6 +1,4 @@
-import { Temporal } from 'temporal-polyfill'
-
-import {Lift, Log, Session} from './data';
+import {Lift, Session} from './data';
 import './utils';
 
 export class LiftCache {

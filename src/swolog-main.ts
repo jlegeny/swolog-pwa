@@ -56,7 +56,7 @@ export class SwologMain extends LitElement {
     }
     return html`<workout-view .log=${this.currentLog} @close=${() => {
       this.currentLog = undefined;
-      history.pushState(null, '', '/');
+      history.pushState(null, '', '/swolog');
     }}></workout-view>`;
   }
 

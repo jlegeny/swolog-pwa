@@ -1,5 +1,5 @@
-import { LitElement, PropertyValues, css, html, nothing } from 'lit'
-import { customElement, property, state, query } from 'lit/decorators.js'
+import { LitElement, PropertyValues, css, html } from 'lit'
+import { customElement, property, query } from 'lit/decorators.js'
 import * as color from './css/colors';
 import './card-container';
 

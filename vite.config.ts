@@ -4,6 +4,7 @@ import { comlink } from "vite-plugin-comlink";
 
 
 export default defineConfig({
+  base: '/swolog',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -14,7 +15,7 @@ export default defineConfig({
         "name": "Swolog Fitness Tracker",
         "short_name": "Swolog",
         "lang": "en-US",
-        "start_url": "/index.html",
+        "start_url": "/swolog/index.html",
         "display": "standalone",
         "background_color": "#30303B",
         "theme_color": "#FF6C00",
