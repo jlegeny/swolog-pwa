@@ -34,8 +34,11 @@ export class WorkoutView extends LitElement {
   @state() previousLift?: Lift;
   @state() highlight: Highlight = {};
 
+  @state() editing: boolean = false;
+
   @query('history-log') historyLog?: HistoryLog;
-  @query('#current') currentTextArea?: HTMLTextAreaElement;
+  @query('.current') currentTextArea?: HTMLTextAreaElement;
+  @query('.editor') editorTextArea?: HTMLTextAreaElement;
 
   parser = new ComlinkWorker<typeof import("./worker-parser")>(
     new URL("./worker-parser", import.meta.url), {}
@@ -46,6 +49,7 @@ export class WorkoutView extends LitElement {
     <header>
       <div>
         <span @click=${this._dispatchClosed}>&lt;Back</span>
+        <span @click=${this.editLog}>Edit</span>
         <span @click=${this.saveLog}>Save</span>
       </div>
     </header>
@@ -53,44 +57,15 @@ export class WorkoutView extends LitElement {
       ${this._parseLogTask.render({
       pending: () => html`
         <history-log></history-log>
-        <textarea id="current" disabled>Loading...</textarea>
+        <textarea id='current' disabled>Loading...</textarea>
         `,
-      complete: ([historyText, currentText]) =>
-        html`
-        <history-log
-          .text=${historyText}
-          .highlight=${this.highlight}
-          @selected=${async (e: { detail: { line: number, text: string } }) => {
-            const { line, text } = e.detail;
-            console.log(line, text);
-            if (!text) {
-              await this.hideHints();
-              return;
-            }
-            await this.showHints(line, text, false);
-          }}
-        ></history-log>
-        <textarea id="current"
-          @click=${async () => {
-            if (this.currentTextArea) {
-
-              const { line, text } = getLineOnCursor(this.currentTextArea);
-              if (!text) {
-                return;
-              }
-              await this.showHints(line, text, true);
-            }
-          }}
-          @blur=${() => {
-            setTimeout(() => {
-              window.scrollTo(0, 0);
-            }, 300)
-          }}
-          .value=${currentText}
-          ></textarea>
-        ${this.renderHints()}
-        <aside>(c) 2024</aside>
-        `
+      complete: ([historyText, currentText]) => {
+        if (this.editing) {
+          return html`<textarea class='editor'>${historyText + currentText}</textarea>`
+        } else {
+          return this.renderLog(historyText, currentText)
+        }
+      }
     })
       }
     </main>
@@ -112,17 +87,65 @@ export class WorkoutView extends LitElement {
     height: 100%;
   }
 
+  textarea:focus {
+    outline:none;
+  }
   history-log {
     flex: 1;
     border-bottom: 1px solid ${color.primary};
   }
-  #current {
+  textarea.editor {
+    height: 300px;
+  }
+  textarea.current {
     height: 200px;
   }
   card-container {
     padding: ${dim.spacing.xs};
   }
+  .hints {
+    min-height: 4.5rem;
+  }
   `;
+
+  private renderLog(historyText: string, currentText: string) {
+    return html`
+      <history-log
+        .text=${historyText}
+        .highlight=${this.highlight}
+        @selected=${async (e: { detail: { line: number, text: string } }) => {
+        const { line, text } = e.detail;
+        console.log(line, text);
+        if (!text) {
+          await this.hideHints();
+          return;
+        }
+        await this.showHints(line, text, false);
+      }}
+      ></history-log>
+      <textarea class="current"
+        @click=${async (e: MouseEvent) => {
+        const textArea = e.target as HTMLTextAreaElement;
+        const { line, text } = getLineOnCursor(textArea);
+        if (!text) {
+          return;
+        }
+        await this.showHints(line, text, true);
+      }}
+        @blur=${() => {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 300)
+      }}
+        .value=${currentText}
+        ></textarea>
+      <card-container>
+        <div class="hints">
+          ${this.renderHints()}
+        </div>
+      </card-container>
+      `
+  }
 
   private renderHints() {
     if (!this.selectedLift) {
@@ -134,10 +157,10 @@ export class WorkoutView extends LitElement {
       }
       return html`${this.previousLift.work}`;
     }
-    
-    let relativeTime: TemplateResult| typeof nothing = nothing;
+
+    let relativeTime: TemplateResult | typeof nothing = nothing;
     if (this.previousLift?.date) {
-      let timeDiff: Temporal.Duration|undefined = undefined;
+      let timeDiff: Temporal.Duration | undefined = undefined;
 
       const previousLiftDate = Temporal.PlainDate.from(this.previousLift.date);
 
@@ -153,22 +176,34 @@ export class WorkoutView extends LitElement {
       }
 
     }
-    return html`<card-container>
+    return html`
       <div>${this.selectedLift.shorthand}</div>
       ${relativeTime}
       <div>${renderPreviousLift()}</div>
-    </card-container>`;
+    `;
   }
 
   private async saveLog() {
-    const historyText = this.historyLog?.text ?? '';
-    const currentText = (await this.currentTextArea)?.value ?? '';
-    this.log.text = `${historyText}\n${currentText}`;
+    if (this.editing) {
+      this.log.text = this.editorTextArea?.value ?? '';
+      this._parseLogTask.run();
+    } else {
+      const historyText = this.historyLog?.text ?? '';
+      const currentText = this.currentTextArea?.value ?? '';
+      this.log.text = `${historyText}\n${currentText}`;
+    }
     try {
       await this.db?.insertOrUpdate<Log>('Log', this.log);
     } catch (e: unknown) {
       console.error(e);
     }
+    if (this.editing) {
+      this.editing = false;
+    }
+  }
+
+  private async editLog() {
+    this.editing = true;
   }
 
   private async showHints(line: number, text: string, asOfToday: boolean) {

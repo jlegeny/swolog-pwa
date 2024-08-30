@@ -27,6 +27,7 @@ textarea {
   background-color: ${color.bg.input};
   border-radius: 0;
   font-size: 1rem;
+  caret-color: ${color.primary};
 }
 `;
 
