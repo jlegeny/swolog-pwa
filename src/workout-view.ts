@@ -47,26 +47,30 @@ export class WorkoutView extends LitElement {
   render() {
     return html`
     <header>
-      <div>
-        <span @click=${this._dispatchClosed}>&lt;Back</span>
-        <span @click=${this.editLog}>Edit</span>
+      <div class="left">
+        ${this.editing ?
+      html`<span @click=${() => { this.editing = false; }}>Cancel</span>` :
+        html`<span @click=${this._dispatchClosed}>&lt; Back</span>`}
+      </div>
+      <div class="right">
+        ${this.editing ? nothing : html`<span @click=${this.editLog}>Edit</span>`}
         <span @click=${this.saveLog}>Save</span>
       </div>
     </header>
     <main>
       ${this._parseLogTask.render({
-      pending: () => html`
+          pending: () => html`
         <history-log></history-log>
         <textarea id='current' disabled>Loading...</textarea>
         `,
-      complete: ([historyText, currentText]) => {
-        if (this.editing) {
-          return html`<textarea class='editor'>${historyText + currentText}</textarea>`
-        } else {
-          return this.renderLog(historyText, currentText)
-        }
-      }
-    })
+          complete: ([historyText, currentText]) => {
+            if (this.editing) {
+              return html`<textarea class='editor'>${historyText + currentText}</textarea>`
+            } else {
+              return this.renderLog(historyText, currentText)
+            }
+          }
+        })
       }
     </main>
     `
@@ -101,6 +105,8 @@ export class WorkoutView extends LitElement {
     height: 200px;
   }
   card-container {
+    border: 1px solid ${color.primary};
+    margin: ${dim.spacing.xs};
     padding: ${dim.spacing.xs};
   }
   .hints {

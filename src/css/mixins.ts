@@ -39,7 +39,7 @@ button {
   background-color: ${color.bg.base};
   font-size: 1rem;
   box-shadow: 4px 4px ${color.shadow};
-  line-height: 1.5rem;
+  line-height: 44pt;
   text-transform: uppercase;
 }
 button:hover {
@@ -55,9 +55,18 @@ button:active {
 
 export const header = css`
   header {
+    display: flex;
+    align-items: center;
     background-color: ${color.primary};
     user-select: none;
     color: ${color.text.default};
-    height: 1.5rem;
+    height: 44pt;
+    justify-content: space-between;
+    padding-left: ${dim.spacing.s};
+    padding-right: ${dim.spacing.s};
+  }
+  header div {
+    display: flex;
+    gap: ${dim.spacing.m};
   }
 `;

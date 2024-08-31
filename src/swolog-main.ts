@@ -10,6 +10,7 @@ import * as color from './css/colors';
 
 import './log-select';
 import './workout-view';
+import './pwa-badge';
 
 /**
  * Main App element.
@@ -29,6 +30,7 @@ export class SwologMain extends LitElement {
   render() {
     return html`
       ${this.currentLog ? this.renderCurrentLog() : this.renderLogSelect()}
+      <pwa-badge></pwa-badge>
     `
   }
 

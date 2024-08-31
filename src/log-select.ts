@@ -31,7 +31,6 @@ export class LogSelect extends LitElement {
       <span></span><h1>Swolog</h1><span></span>
     </header>
     <main>
-      <aside>...</aside>
       <card-container>
         <h1>Create a new workout log</h1>
         <div>
@@ -57,9 +56,10 @@ export class LogSelect extends LitElement {
     main {
       display: flex;
       flex-direction: column;
-      gap: var(--size-space-m);
-      padding-left: var(--size-space-s);
-      padding-right: var(--size-space-s);
+      gap: ${dim.spacing.m};
+      padding-top: ${dim.spacing.m};
+      padding-left: ${dim.spacing.s};
+      padding-right: ${dim.spacing.s};
       height:100%;
     }
     
@@ -94,11 +94,11 @@ export class LogSelect extends LitElement {
      }
     ul li:nth-child(2n + 1) {
           background: ${color.bg.card.alt};
-        }
-      li&:last-child {
-          border-bottom-left-radius: var(--size-border);
-          border-bottom-right-radius: var(--size-border);
-        }
+    }
+    ul li:last-child {
+      border-bottom-left-radius: ${dim.radius};
+      border-bottom-right-radius: ${dim.radius};
+    }
   `;
 
   private renderWaitingScreen() {
