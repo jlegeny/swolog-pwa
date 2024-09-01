@@ -7,10 +7,13 @@ import { dbContext } from './indexdb-context';
 import { Log } from './lib/data';
 
 import * as color from './css/colors';
+import * as dim from './css/dimensions';
 
 import './log-select';
 import './workout-view';
 import './pwa-badge';
+
+const VERSION = "0.0.1";
 
 /**
  * Main App element.
@@ -29,7 +32,12 @@ export class SwologMain extends LitElement {
 
   render() {
     return html`
-      ${this.currentLog ? this.renderCurrentLog() : this.renderLogSelect()}
+      ${this.currentLog ? this.renderCurrentLog() :
+        html`
+          ${this.renderLogSelect()}
+          <div class="version">${VERSION}</div>
+          `
+      }
       <pwa-badge></pwa-badge>
     `
   }
@@ -50,6 +58,13 @@ export class SwologMain extends LitElement {
       flex: 1;
       background: ${color.bg.base};
     }
+    .version {
+      position: fixed;
+      bottom: 0;
+      padding: ${dim.spacing.xs};
+      text-align: center;
+      width: 100%;
+    }
   `;
 
   private renderCurrentLog() {
@@ -67,19 +82,19 @@ export class SwologMain extends LitElement {
       <log-select @selected-log=${(e: { detail: { log: Log } }) => {
         console.debug(`Selected workout ${e.detail.log.id}`);
         this.currentLog = e.detail.log;
-        history.pushState(null, '', `#${this.currentLog.id}`);
+        history.pushState(null, '', `/swolog/#${this.currentLog.id}`);
       }}></log-select>
     `;
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
-    
+
     function updateViewportHeight() {
       const viewportHeight = window.innerHeight;
       document.documentElement.style.setProperty('--vh', `${viewportHeight}px`);
     }
-    
+
     // Run on page load
     updateViewportHeight();
 

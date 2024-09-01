@@ -8,7 +8,7 @@ import { registerSW } from 'virtual:pwa-register'
 @customElement('pwa-badge')
 export class PwaBadge extends LitElement {
     @property()
-    private _period = 0 // check for updates disabled
+    private _period = 30 * 60 * 1000 // check for updates 30 minutes
     @property()
     private _swActivated = false
     @state()
@@ -21,9 +21,9 @@ export class PwaBadge extends LitElement {
     firstUpdated() {
         this._updateServiceWorker = registerSW({
             immediate: true,
-            
+            onOfflineReady: () => (this._offlineReady = true),
             onNeedRefresh: () => (this._needRefresh = true),
-            onRegisteredSW: this._onRegisteredSW
+            onRegisteredSW: this._onRegisteredSW.bind(this)
         })
     }
 

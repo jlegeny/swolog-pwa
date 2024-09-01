@@ -49,7 +49,7 @@ export class WorkoutView extends LitElement {
     <header>
       <div class="left">
         ${this.editing ?
-      html`<span @click=${() => { this.editing = false; }}>Cancel</span>` :
+        html`<span @click=${() => { this.editing = false; }}>Cancel</span>` :
         html`<span @click=${this._dispatchClosed}>&lt; Back</span>`}
       </div>
       <div class="right">
