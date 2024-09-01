@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const primary = css`#FF6C00`;
-export const active = css`#ffd900`;
+export const active = css`#ffffff`;
 
 export const text = {
   default: css`#e0e0e0`,

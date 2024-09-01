@@ -82,6 +82,10 @@ export class LogSelect extends LitElement {
       gap: ${dim.spacing.s};
       padding: ${dim.spacing.xs};
     }
+    p {
+      margin-left: ${dim.spacing.xs};
+      margin-right: ${dim.spacing.xs};
+    }
     ul {
       padding: 0;
       margin: 0;
@@ -115,7 +119,7 @@ export class LogSelect extends LitElement {
             ${logs.map(log => html`
               <li @click=${() => { this.logId = log.id; }}>${log.id}</li>`)}
           </ul>
-          ` : html`Logs database is empty`,
+          ` : html`<p>Logs database is empty</p>`,
       error: (e) => html`<p>Error: ${e}</p>`
     });
   }
