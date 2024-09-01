@@ -1,6 +1,8 @@
 /* Reset */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 * {
@@ -10,14 +12,27 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
 
@@ -41,7 +56,7 @@ p, h1, h2, h3, h4, h5, h6 {
   --size-space-s: 10px;
   --size-space-m: 20px;
   --color-text-default: #eee;
-  --color-primary: #FF6C00;
+  --color-primary: #ff6c00;
   --color-bg-0: #121212;
   --color-bg-1: #242424;
   --color-bg-2: #323232;
@@ -56,7 +71,8 @@ p, h1, h2, h3, h4, h5, h6 {
   font-style: normal;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;

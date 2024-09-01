@@ -43,7 +43,7 @@ export class IDB {
     if (!this.db) {
       try {
         await this.open();
-      } catch(e: unknown) {
+      } catch (e: unknown) {
         console.error("Error opening database.");
         return Promise.reject(e);
       }
@@ -53,7 +53,7 @@ export class IDB {
       const objectStore = transaction.objectStore(storeName);
       const request = objectStore.openCursor();
       const entries: T[] = [];
-  
+
       request.onsuccess = (event) => {
         const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
         if (cursor) {
@@ -63,7 +63,7 @@ export class IDB {
           resolve(entries);
         }
       };
-  
+
       request.onerror = (event) => {
         console.error(event);
         reject((event.target as IDBRequest).error);
@@ -71,26 +71,29 @@ export class IDB {
     });
   }
 
-  async selectById<T>(storeName: string, id: IDBValidKey): Promise<T | undefined> {
+  async selectById<T>(
+    storeName: string,
+    id: IDBValidKey
+  ): Promise<T | undefined> {
     if (!this.db) {
       try {
         await this.open();
-      } catch(e: unknown) {
+      } catch (e: unknown) {
         console.error("Error opening database.");
         return Promise.reject(e);
       }
     }
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(storeName, "readonly");
       const objectStore = transaction.objectStore(storeName);
       const request = objectStore.get(id);
-  
+
       request.onsuccess = (event) => {
         const result = (event.target as IDBRequest).result;
         resolve(result as T | undefined);
       };
-  
+
       request.onerror = (event) => {
         reject((event.target as IDBRequest).error);
       };
@@ -101,7 +104,7 @@ export class IDB {
     if (!this.db) {
       try {
         await this.open();
-      } catch(e: unknown) {
+      } catch (e: unknown) {
         console.error("Error opening database.");
         return Promise.reject(e);
       }
@@ -111,11 +114,11 @@ export class IDB {
       const transaction = this.db!.transaction(storeName, "readwrite");
       const objectStore = transaction.objectStore(storeName);
       const request = objectStore.add(entry);
-  
+
       request.onsuccess = () => {
         resolve();
       };
-  
+
       request.onerror = (event) => {
         reject((event.target as IDBRequest).error);
       };
@@ -126,7 +129,7 @@ export class IDB {
     if (!this.db) {
       try {
         await this.open();
-      } catch(e: unknown) {
+      } catch (e: unknown) {
         console.error("Error opening database.");
         return Promise.reject(e);
       }
@@ -136,15 +139,14 @@ export class IDB {
       const transaction = this.db!.transaction(storeName, "readwrite");
       const objectStore = transaction.objectStore(storeName);
       const request = objectStore.put(entry);
-  
+
       request.onsuccess = () => {
         resolve();
       };
-  
+
       request.onerror = (event) => {
         reject((event.target as IDBRequest).error);
       };
     });
   }
-
 }

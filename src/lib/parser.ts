@@ -1,4 +1,4 @@
-import { Log, Session, Lift } from './data';
+import { Log, Session, Lift } from "./data";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
@@ -10,8 +10,8 @@ enum ParseErrorType {
 
 class ParseError extends Error {
   constructor(readonly type: ParseErrorType, msg: string) {
-      super(msg);
-      Object.setPrototypeOf(this, ParseError.prototype);
+    super(msg);
+    Object.setPrototypeOf(this, ParseError.prototype);
   }
   toString() {
     return this.type;
@@ -22,22 +22,25 @@ export interface ParsingMetadata {
   lastSessionStartLine?: number;
 }
 
-export function parseLog(log: Log): { sessions: Session[], errors: Map<number, string>, metadata: ParsingMetadata } {
+export function parseLog(log: Log): {
+  sessions: Session[];
+  errors: Map<number, string>;
+  metadata: ParsingMetadata;
+} {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
 
   console.group(`Parsing log ${log.id}`);
 
-  const lines = log.text.split('\n');
+  const lines = log.text.split("\n");
 
-  let currentDate: string | undefined = undefined
-  let currentSession: Session | undefined =  undefined;
+  let currentDate: string | undefined = undefined;
+  let currentSession: Session | undefined = undefined;
 
-  let lineNumber = 0
+  let lineNumber = 0;
 
-  lines:
-  for (const line of lines) {
+  lines: for (const line of lines) {
     lineNumber++;
     if (sessions.length) {
       sessions[sessions.length - 1].endLine += 1;
@@ -52,7 +55,7 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
     if (line.match(/^#/)) {
       continue lines;
     }
-    
+
     // Match dates.
     const matchDate = RE_DATE.exec(line);
     if (matchDate) {
@@ -68,23 +71,23 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
         lifts: [],
         startLine: lineNumber,
         endLine: lineNumber,
-      }
+      };
       if (sessions.length) {
         // Avoid overlapping session lengths
         sessions[sessions.length - 1].endLine -= 1;
       }
-      sessions.push(currentSession)
+      sessions.push(currentSession);
       currentDate = date;
       continue lines;
     }
-    
+
     // Match lifts.
     if (currentDate === undefined) {
       errors.set(lineNumber, "Unknown date for lift");
       console.warn(`Uknown date for lift ${line}`);
       continue lines;
     }
-    
+
     try {
       const lift = parseLift(line);
       lift.line = lineNumber;
@@ -104,11 +107,10 @@ export function parseLog(log: Log): { sessions: Session[], errors: Map<number, s
   return { sessions, errors, metadata };
 }
 
-
 export function parseLift(line: string): Lift {
   let str = line;
   console.debug(`Parsing lift [${str}]`);
-  
+
   let isSuperSet = false;
   if (str.match(/^SS /)) {
     isSuperSet = true;
@@ -126,8 +128,7 @@ export function parseLift(line: string): Lift {
   const work = str.slice(match[0].length);
 
   let groups = work.split(/;/);
-  group:
-  for (const group of groups) {
+  group: for (const group of groups) {
     let str = group.trim();
     // Split of the first blob without spaces, this is the group of weights
     let match = str.match(/^[^ ]+/);
@@ -140,7 +141,7 @@ export function parseLift(line: string): Lift {
     let weights = groupWeights.split(/\//);
     for (const weight of weights) {
       const match = RE_WEIGHT.exec(weight);
-      if (!match) { 
+      if (!match) {
         throw new ParseError(ParseErrorType.INVALID_WEIGHT, weight);
       }
       console.debug(`Weight ${match.groups?.weight}`);
@@ -150,5 +151,5 @@ export function parseLift(line: string): Lift {
   return {
     shorthand,
     work,
-  }
+  };
 }

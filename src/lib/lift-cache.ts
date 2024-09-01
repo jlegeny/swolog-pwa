@@ -1,8 +1,8 @@
-import {Lift, Session} from './data';
-import './utils';
+import { Lift, Session } from "./data";
+import "./utils";
 
 export class LiftCache {
- private shorthandToAllLifts = new Map<string, Lift[]>();
+  private shorthandToAllLifts = new Map<string, Lift[]>();
 
   constructor(public sessions: Session[]) {
     for (const session of sessions) {
@@ -11,12 +11,12 @@ export class LiftCache {
           this.shorthandToAllLifts.set(lift.shorthand, []);
         }
         lift.date = session.date;
-        this.shorthandToAllLifts.get(lift.shorthand)?.push(lift)
+        this.shorthandToAllLifts.get(lift.shorthand)?.push(lift);
       }
     }
   }
 
-  public get lastSession(): Session|undefined {
+  public get lastSession(): Session | undefined {
     if (!this.sessions.length) {
       return undefined;
     }
@@ -30,7 +30,7 @@ export class LiftCache {
       }
     }
     return undefined;
-  }
+  };
 
   findPreviousLift = (shorthand: string, date: string): Lift | undefined => {
     const history = this.shorthandToAllLifts.get(shorthand);
@@ -40,7 +40,7 @@ export class LiftCache {
 
     for (const lift of history.reversed()) {
       if (!lift.date) {
-        console.error('Lift has no date', lift);
+        console.error("Lift has no date", lift);
         return undefined;
       }
       if (lift.date < date) {
@@ -48,5 +48,5 @@ export class LiftCache {
       }
     }
     return undefined;
-  }
+  };
 }

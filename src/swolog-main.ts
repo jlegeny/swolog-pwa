@@ -1,26 +1,25 @@
-import { LitElement, css, nothing, html, PropertyValues } from 'lit'
-import { customElement, state } from 'lit/decorators.js'
-import { provide } from '@lit/context';
+import { LitElement, css, nothing, html, PropertyValues } from "lit";
+import { customElement, state } from "lit/decorators.js";
+import { provide } from "@lit/context";
 
-import { IDB } from './lib/idb';
-import { dbContext } from './indexdb-context';
-import { Log } from './lib/data';
+import { IDB } from "./lib/idb";
+import { dbContext } from "./indexdb-context";
+import { Log } from "./lib/data";
 
-import * as color from './css/colors';
-import * as dim from './css/dimensions';
+import * as color from "./css/colors";
+import * as dim from "./css/dimensions";
 
-import './log-select';
-import './workout-view';
-import './pwa-badge';
+import "./log-select";
+import "./workout-view";
+import "./pwa-badge";
 
 const VERSION = "0.0.1";
 
 /**
  * Main App element.
  */
-@customElement('swolog-main')
+@customElement("swolog-main")
 export class SwologMain extends LitElement {
-
   @provide({ context: dbContext })
   db = new IDB();
 
@@ -32,14 +31,14 @@ export class SwologMain extends LitElement {
 
   render() {
     return html`
-      ${this.currentLog ? this.renderCurrentLog() :
-        html`
-          ${this.renderLogSelect()}
-          <div class="version">${VERSION}</div>
-          `
-      }
+      ${this.currentLog
+        ? this.renderCurrentLog()
+        : html`
+            ${this.renderLogSelect()}
+            <div class="version">${VERSION}</div>
+          `}
       <pwa-badge></pwa-badge>
-    `
+    `;
   }
 
   static styles = css`
@@ -71,19 +70,24 @@ export class SwologMain extends LitElement {
     if (!this.currentLog) {
       return nothing;
     }
-    return html`<workout-view .log=${this.currentLog} @close=${() => {
-      this.currentLog = undefined;
-      history.pushState(null, '', '/swolog');
-    }}></workout-view>`;
+    return html`<workout-view
+      .log=${this.currentLog}
+      @close=${() => {
+        this.currentLog = undefined;
+        history.pushState(null, "", "/swolog");
+      }}
+    ></workout-view>`;
   }
 
   private renderLogSelect() {
     return html`
-      <log-select @selected-log=${(e: { detail: { log: Log } }) => {
-        console.debug(`Selected workout ${e.detail.log.id}`);
-        this.currentLog = e.detail.log;
-        history.pushState(null, '', `/swolog/#${this.currentLog.id}`);
-      }}></log-select>
+      <log-select
+        @selected-log=${(e: { detail: { log: Log } }) => {
+          console.debug(`Selected workout ${e.detail.log.id}`);
+          this.currentLog = e.detail.log;
+          history.pushState(null, "", `/swolog/#${this.currentLog.id}`);
+        }}
+      ></log-select>
     `;
   }
 
@@ -92,20 +96,22 @@ export class SwologMain extends LitElement {
 
     function updateViewportHeight() {
       const viewportHeight = window.innerHeight;
-      document.documentElement.style.setProperty('--vh', `${viewportHeight}px`);
+      document.documentElement.style.setProperty("--vh", `${viewportHeight}px`);
     }
 
     // Run on page load
     updateViewportHeight();
 
-    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener("resize", updateViewportHeight);
   }
 
-  protected override async firstUpdated(_changedProperties: PropertyValues): Promise<void> {
+  protected override async firstUpdated(
+    _changedProperties: PropertyValues
+  ): Promise<void> {
     if (location.hash) {
-      const logId = location.hash.replace(/^#/, '');
+      const logId = location.hash.replace(/^#/, "");
       console.debug(`Loading workout log ${logId}`);
-      const log = await this.db.selectById<Log>('Log', logId);
+      const log = await this.db.selectById<Log>("Log", logId);
       console.debug(`Loaded`, log);
       if (log) {
         this.currentLog = log;
@@ -116,6 +122,6 @@ export class SwologMain extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'swolog-main': SwologMain
+    "swolog-main": SwologMain;
   }
 }

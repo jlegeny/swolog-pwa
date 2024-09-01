@@ -1,21 +1,18 @@
-import { LitElement, css, html } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { LitElement, css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
-import * as dim from './css/dimensions';
-import * as color from './css/colors';
+import * as dim from "./css/dimensions";
+import * as color from "./css/colors";
 
 /**
  * A card element.
  */
-@customElement('card-container')
+@customElement("card-container")
 export class CardContainer extends LitElement {
-
   render() {
-    return html`
-      <slot></slot>
-    `
+    return html` <slot></slot> `;
   }
-  
+
   static styles = css`
     :host {
       display: block;
@@ -38,6 +35,6 @@ export class CardContainer extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'card-container': CardContainer
+    "card-container": CardContainer;
   }
 }
