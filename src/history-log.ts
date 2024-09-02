@@ -1,6 +1,7 @@
-import { LitElement, PropertyValues, css, html } from "lit";
+import { LitElement, PropertyValues, css, html, nothing } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import * as color from "./css/colors";
+import * as dim from "./css/dimensions";
 import "./card-container";
 
 export interface Highlight {
@@ -19,6 +20,7 @@ export interface Highlight {
 export class HistoryLog extends LitElement {
   @property({ attribute: false }) text = "";
   @property({ attribute: false }) highlight?: Highlight;
+  @property({ attribute: false }) errors? = new Map<number, string>();
 
   @query(".container") container?: HTMLDivElement;
 
@@ -26,16 +28,9 @@ export class HistoryLog extends LitElement {
     return html`
       <div class="container">
         <div class="content">
-          ${this.text.split(/\n/).map(
-            (line, index) => html` <div
-              class="${index === this.highlight?.line && "highlight"}"
-              @click=${() => {
-                this._dispatchSelected(index, line);
-              }}
-            >
-              ${line === "" ? html`<br />` : line}
-            </div>`
-          )}
+          ${this.text
+            .split(/\n/)
+            .map((text, index) => this.renderLine(index, text))}
         </div>
       </div>
     `;
@@ -59,7 +54,26 @@ export class HistoryLog extends LitElement {
     .content div.highlight {
       background-color: ${color.primary};
     }
+    .content div .error {
+      background: ${color.bg.error};
+      font-size: ${dim.text.aux};
+    }
   `;
+
+  public renderLine(index: number, text: string) {
+    const line = index + 1;
+    return html`<div
+      class="${index === this.highlight?.line && "highlight"}"
+      @click=${() => {
+        this._dispatchSelected(index, text);
+      }}
+    >
+      ${text === "" ? html`<br />` : text}
+      ${this.errors?.has(line)
+        ? html`<div class="error">${this.errors.get(line)}</div>`
+        : nothing}
+    </div>`;
+  }
 
   public scrollToBottom() {
     if (!this.container) {

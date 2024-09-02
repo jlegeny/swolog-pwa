@@ -19,6 +19,7 @@ import * as mixin from "./css/mixins";
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import { Highlight, HistoryLog } from "./history-log";
+import { ParseError } from "./lib/parser";
 
 import "./card-container";
 import "./history-log";
@@ -40,6 +41,7 @@ export class WorkoutView extends LitElement {
   @state() highlight: Highlight = {};
 
   @state() editing: boolean = false;
+  @state() modified = false;
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
@@ -76,13 +78,13 @@ export class WorkoutView extends LitElement {
             <history-log></history-log>
             <textarea id="current" disabled>Loading...</textarea>
           `,
-          complete: ([historyText, currentText]) => {
+          complete: ({ historyText, currentText, errors }) => {
             if (this.editing) {
               return html`<textarea class="editor">
 ${historyText + currentText}</textarea
               >`;
             } else {
-              return this.renderLog(historyText, currentText);
+              return this.renderLog(historyText, currentText, errors);
             }
           },
         })}
@@ -128,11 +130,16 @@ ${historyText + currentText}</textarea
     }
   `;
 
-  private renderLog(historyText: string, currentText: string) {
+  private renderLog(
+    historyText: string,
+    currentText: string,
+    errors?: Map<number, string>
+  ) {
     return html`
       <history-log
         .text=${historyText}
         .highlight=${this.highlight}
+        .errors=${errors}
         @selected=${async (e: { detail: { line: number; text: string } }) => {
           const { line, text } = e.detail;
           console.log(line, text);
@@ -232,6 +239,9 @@ ${historyText + currentText}</textarea
   }
 
   private async editLog() {
+    // We save the log first so the user does not lose the typed in
+    // current workout.
+    await this.saveLog();
     this.editing = true;
   }
 
@@ -255,7 +265,11 @@ ${historyText + currentText}</textarea
       const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
       this.previousLift = previousLift;
     } catch (e: unknown) {
-      console.error(e);
+      if (e instanceof ParseError) {
+        console.error(`Parsing error on line ${line} : ${e.toString()}`);
+      } else {
+        console.error(e);
+      }
     }
   }
 
@@ -283,12 +297,12 @@ ${historyText + currentText}</textarea
       // - this last session has happened today
       const lastSession = this.cache.lastSession;
       if (!lastSession || !metadata.lastSessionStartLine) {
-        return [log.text, ""];
+        return { historyText: log.text, currentText: "", errors };
       }
       const isToday =
         Temporal.Now.plainDateISO().toString() === lastSession.date;
       if (!isToday) {
-        return [log.text, ""];
+        return { historyText: log.text, currentText: "", errors };
       }
       const lines = this.log.text.split(/\n/);
       const currentText = lines
@@ -296,7 +310,7 @@ ${historyText + currentText}</textarea
         .join("\n");
       const historyText = lines.join("\n");
 
-      return [historyText, currentText];
+      return { historyText, currentText, errors };
     },
     args: () => [this.log],
   });

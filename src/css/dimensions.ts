@@ -7,3 +7,8 @@ export const spacing = {
   s: css`10px`,
   m: css`20px`,
 }
+
+export const text = {
+  default: css`1rem`,
+  aux: css`0.8rem`,
+}
