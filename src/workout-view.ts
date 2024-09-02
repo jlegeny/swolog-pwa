@@ -257,6 +257,10 @@ ${historyText + currentText}</textarea
     // current workout.
     await this.saveLog();
     this.editing = true;
+
+    setTimeout(() => {
+      this.editorTextArea?.focus();
+    }, 200);
   }
 
   private async showHints(line: number, text: string, asOfToday: boolean) {

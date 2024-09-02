@@ -71,6 +71,7 @@ export const header = css`
   }
   header button {
     font-family: "JetBrains Mono", monospace;
+    color: ${color.text.default};
     background: transparent;
     border: none;
     font-size: ${dim.text.default};
