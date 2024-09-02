@@ -8,7 +8,7 @@ enum ParseErrorType {
   INVALID_WEIGHT = "Invalid Weight",
 }
 
-class ParseError extends Error {
+export class ParseError extends Error {
   constructor(readonly type: ParseErrorType, msg: string) {
     super(msg);
     Object.setPrototypeOf(this, ParseError.prototype);
@@ -119,15 +119,19 @@ export function parseLift(line: string): Lift {
     console.debug(` .. remaining match [${str}]`);
   }
 
-  const match = /(?<shorthand>\w+)\ ?/.exec(str);
-  if (!match) {
+  const match = /(?<shorthand>\w+)(#(?<modifiers>\w+))?\ ?/.exec(str);
+  if (!match?.groups?.shorthand) {
     throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
-
-  const shorthand = match.groups?.shorthand ?? "ERROR";
+  const shorthand = match.groups?.shorthand;
   const work = str.slice(match[0].length);
+  const modifiersString = match.groups?.modifiers;
+  const modifiers = modifiersString?.split(/(?=[A-Z])/g);
 
-  let groups = work.split(/;/);
+  // Ignore all comments
+  const workWithoutComments = work.replace(/\([^)]+\)/g, '');
+
+  let groups = workWithoutComments.split(/;/);
   group: for (const group of groups) {
     let str = group.trim();
     // Split of the first blob without spaces, this is the group of weights
@@ -150,6 +154,7 @@ export function parseLift(line: string): Lift {
 
   return {
     shorthand,
+    modifiers,
     work,
   };
 }

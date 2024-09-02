@@ -15,6 +15,7 @@ export interface Session {
 export interface Lift {
   shorthand: string;
   work: string;
+  modifiers?: string[];
   date?: string;
   line?: number;
 }
