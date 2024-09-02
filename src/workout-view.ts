@@ -156,14 +156,10 @@ ${historyText + currentText}</textarea
         .text=${historyText}
         .highlight=${this.highlight}
         .errors=${errors}
-        @selected=${async (e: { detail: { line: number; text: string } }) => {
-          const { line, text } = e.detail;
-          console.log(line, text);
-          if (!text) {
-            await this.hideHints();
-            return;
-          }
-          await this.showHints(line, text, false);
+        @selected=${async (e: { detail: { line: number } }) => {
+          const { line } = e.detail;
+
+          await this.showHintsAtLine(line);
         }}
       ></history-log>
       <textarea
@@ -174,11 +170,11 @@ ${historyText + currentText}</textarea
         spellcheck="false"
         @click=${async (e: MouseEvent) => {
           const textArea = e.target as HTMLTextAreaElement;
-          const { line, text } = getLineOnCursor(textArea);
+          const { text } = getLineOnCursor(textArea);
           if (!text) {
             return;
           }
-          await this.showHints(line, text, true);
+          await this.showHintsFromText(text);
         }}
         @blur=${() => {
           setTimeout(() => {
@@ -187,7 +183,7 @@ ${historyText + currentText}</textarea
         }}
         @keyup=${async (e: KeyboardEvent) => {
           const textArea = e.target as HTMLTextAreaElement;
-          const { line, text } = getLineOnCursor(textArea);
+          const { text } = getLineOnCursor(textArea);
           if (!text) {
             return;
           }
@@ -198,7 +194,7 @@ ${historyText + currentText}</textarea
           this.autosaveTimeout = setTimeout(() => {
             this.saveLog();
           }, 5000);
-          await this.showHints(line, text, true);
+          await this.showHintsFromText(text);
         }}
         @paste=${() => {
           this.modified = true;
@@ -289,28 +285,31 @@ ${historyText + currentText}</textarea
     }, 300);
   }
 
-  private async showHints(line: number, text: string, asOfToday: boolean) {
-    let date: string | undefined;
-    if (asOfToday) {
-      date = Temporal.Now.plainDateISO().toString();
-    } else {
-      date = this.cache.getDateAtLine(line);
-    }
-    if (!date) {
+  private async showHintsAtLine(line: number) {
+    const lift = await this.cache.liftAtLine(line);
+    if (!lift?.date) {
+      this.hideHints();
       return;
     }
+    this.selectedLift = lift;
+    const previousLift = this.cache.findPreviousLift(lift.shorthand, lift.date);
+    this.previousLift = previousLift;
+  }
+
+  private async showHintsFromText(text: string) {
+    let date = Temporal.Now.plainDateISO().toString();
     try {
       const lift = await this.parser.parseLift(text);
       this.selectedLift = {
         ...lift,
-        line,
         date,
       };
       const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
       this.previousLift = previousLift;
     } catch (e: unknown) {
+      this.hideHints();
       if (e instanceof ParseError) {
-        console.error(`Parsing error on line ${line} : ${e.toString()}`);
+        console.error(`Parsing error for text ${text} : ${e.toString()}`);
       } else {
         console.error(e);
       }

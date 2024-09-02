@@ -1,5 +1,6 @@
 enum Muscle {
   pectoral = "pectoral",
+  triceps = "triceps",
 }
 
 interface Modifier {
@@ -17,7 +18,20 @@ interface Exercise {
   shorthand: string;
 }
 
-export const config: {
+const freeWeights = [
+  {
+    name: "Barbell",
+    shortcut: "B",
+  },
+  {
+    name: "Dumbbell",
+    shortcut: "Db",
+    multiplier: 2,
+  },
+];
+
+
+export const database: {
   exercises: Exercise[];
   shortcuts: Map<string, string>;
 } = {
@@ -26,18 +40,19 @@ export const config: {
       name: "Bench Press",
       shorthand: "BP",
       target: [Muscle.pectoral],
-      modifiers: [
-        {
-          name: "Barbell",
-          shortcut: "B",
-        },
-        {
-          name: "Dumbbell",
-          shortcut: "Db",
-          multiplier: 2,
-        },
-      ],
+      modifiers: freeWeights,
+    },
+    {
+      name: "Incline Bench Press",
+      shorthand: "IBP",
+      target: [Muscle.pectoral],
+      auxiliary: [Muscle.triceps],
+      modifiers: freeWeights,
     },
   ],
-  shortcuts: new Map([["BBP", "BP#B"]]),
+  shortcuts: new Map([
+    ["BBP", "BP#B"],
+    ["DBBP", "BP#Db"],
+    ["IBBP", "IBP#B"],
+  ]),
 };

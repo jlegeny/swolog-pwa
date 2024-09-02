@@ -2,6 +2,7 @@ import { Lift, Session } from "./data";
 import "./utils";
 
 export class LiftCache {
+  private lineToLift = new Map<number, Lift>();
   private shorthandToAllLifts = new Map<string, Lift[]>();
 
   constructor(public sessions: Session[]) {
@@ -12,6 +13,9 @@ export class LiftCache {
         }
         lift.date = session.date;
         this.shorthandToAllLifts.get(lift.shorthand)?.push(lift);
+        if (lift.line) {
+          this.lineToLift.set(lift.line, lift);
+        }
       }
     }
   }
@@ -23,7 +27,7 @@ export class LiftCache {
     return this.sessions[this.sessions.length - 1];
   }
 
-  getDateAtLine = (line: number): string | undefined => {
+  dateAtLine = (line: number): string | undefined => {
     for (const session of this.sessions) {
       if (session.startLine <= line && line <= session.endLine) {
         return session.date;
@@ -31,6 +35,10 @@ export class LiftCache {
     }
     return undefined;
   };
+
+  liftAtLine = (line: number): Lift | undefined => {
+    return this.lineToLift.get(line);
+  }
 
   findPreviousLift = (shorthand: string, date: string): Lift | undefined => {
     const history = this.shorthandToAllLifts.get(shorthand);

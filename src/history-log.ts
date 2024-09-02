@@ -63,9 +63,9 @@ export class HistoryLog extends LitElement {
   public renderLine(index: number, text: string) {
     const line = index + 1;
     return html`<div
-      class="${index === this.highlight?.line && "highlight"}"
+      class="${line === this.highlight?.line && "highlight"}"
       @click=${() => {
-        this._dispatchSelected(index, text);
+        this._dispatchSelected(line);
       }}
     >
       ${text === "" ? html`<br />` : text}
@@ -82,11 +82,10 @@ export class HistoryLog extends LitElement {
     this.container.scrollTop = this.container.scrollHeight;
   }
 
-  private _dispatchSelected(line: number, text: string) {
+  private _dispatchSelected(line: number) {
     const options = {
       detail: {
         line,
-        text,
       },
       bubbles: true,
       composed: true,
