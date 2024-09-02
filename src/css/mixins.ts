@@ -69,4 +69,10 @@ export const header = css`
     display: flex;
     gap: ${dim.spacing.m};
   }
+  header button {
+    font-family: "JetBrains Mono", monospace;
+    background: transparent;
+    border: none;
+    font-size: ${dim.text.default};
+  }
 `;

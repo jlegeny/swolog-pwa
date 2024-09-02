@@ -42,6 +42,7 @@ export class WorkoutView extends LitElement {
 
   @state() editing: boolean = false;
   @state() modified = false;
+  @state() autosaveTimeout?: ReturnType<typeof setTimeout>;
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
@@ -68,8 +69,10 @@ export class WorkoutView extends LitElement {
         <div class="right">
           ${this.editing
             ? nothing
-            : html`<span @click=${this.editLog}>Edit</span>`}
-          <span @click=${this.saveLog}>Save</span>
+            : html`<button @click=${this.editLog}>Edit</button>`}
+          <button ?disabled=${!this.modified} @click=${this.saveLog}>
+            Save
+          </button>
         </div>
       </header>
       <main>
@@ -171,7 +174,17 @@ ${historyText + currentText}</textarea
           if (!text) {
             return;
           }
+          this.modified = true;
+          if (this.autosaveTimeout) {
+            clearTimeout(this.autosaveTimeout);
+          }
+          this.autosaveTimeout = setTimeout(() => {
+            this.saveLog();
+          }, 5000);
           await this.showHints(line, text, true);
+        }}
+        @paste=${(e: ClipboardEvent) => {
+          this.modified = true;
         }}
         .value=${currentText}
       ></textarea>
@@ -230,6 +243,7 @@ ${historyText + currentText}</textarea
     }
     try {
       await this.db?.insertOrUpdate<Log>("Log", this.log);
+      this.modified = false;
     } catch (e: unknown) {
       console.error(e);
     }
