@@ -200,7 +200,7 @@ ${historyText + currentText}</textarea
           }, 5000);
           await this.showHints(line, text, true);
         }}
-        @paste=${(e: ClipboardEvent) => {
+        @paste=${() => {
           this.modified = true;
         }}
         .value=${currentText}
