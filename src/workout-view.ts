@@ -60,6 +60,7 @@ export class WorkoutView extends LitElement {
           ${this.editing
             ? html`<span
                 @click=${() => {
+                  this.modified = false;
                   this.editing = false;
                 }}
                 >Cancel</span
@@ -83,7 +84,19 @@ export class WorkoutView extends LitElement {
           `,
           complete: ({ historyText, currentText, errors }) => {
             if (this.editing) {
-              return html`<textarea class="editor">
+              return html`<textarea
+                autocorrect="off"
+                autocapitalize="off"
+                autocomplete="off"
+                spellcheck="false"
+                @keyup=${async () => {
+                  this.modified = true;
+                }}
+                @paste=${() => {
+                  this.modified = true;
+                }}
+                class="editor"
+              >
 ${historyText + currentText}</textarea
               >`;
             } else {
@@ -155,6 +168,10 @@ ${historyText + currentText}</textarea
       ></history-log>
       <textarea
         class="current"
+        autocorrect="off"
+        autocapitalize="off"
+        autocomplete="off"
+        spellcheck="false"
         @click=${async (e: MouseEvent) => {
           const textArea = e.target as HTMLTextAreaElement;
           const { line, text } = getLineOnCursor(textArea);
@@ -233,6 +250,7 @@ ${historyText + currentText}</textarea
   }
 
   private async saveLog() {
+    clearTimeout(this.autosaveTimeout);
     if (this.editing) {
       this.log.text = this.editorTextArea?.value ?? "";
       this._parseLogTask.run();
@@ -259,8 +277,16 @@ ${historyText + currentText}</textarea
     this.editing = true;
 
     setTimeout(() => {
-      this.editorTextArea?.focus();
-    }, 200);
+      if (!this.editorTextArea) {
+        return;
+      }
+      this.editorTextArea.focus();
+      this.editorTextArea.setSelectionRange(
+        this.editorTextArea.value.length,
+        this.editorTextArea.value.length
+      );
+      this.editorTextArea.scrollTop = this.editorTextArea.scrollHeight;
+    }, 300);
   }
 
   private async showHints(line: number, text: string, asOfToday: boolean) {

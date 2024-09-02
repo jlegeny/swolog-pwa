@@ -75,5 +75,10 @@ export const header = css`
     background: transparent;
     border: none;
     font-size: ${dim.text.default};
+    padding: ${dim.spacing.xs};
+  }
+  header button:disabled {
+    color: ${color.text.default};
+    opacity: 50%;
   }
 `;
