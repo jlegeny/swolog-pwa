@@ -38,6 +38,7 @@ export class WorkoutView extends LitElement {
   @state() cache: LiftCache = new LiftCache([]);
   @state() selectedLift?: Lift;
   @state() previousLift?: Lift;
+  @state() detailsLift?: Lift;
   @state() highlight: Highlight = {};
 
   @state() editing: boolean = false;
@@ -121,6 +122,10 @@ ${historyText + currentText}</textarea
       display: flex;
       flex-direction: column;
       height: 100%;
+      position: relative;
+    }
+    main:has(.details) history-log {
+      pointer-events: none;
     }
 
     textarea:focus {
@@ -137,12 +142,39 @@ ${historyText + currentText}</textarea
       height: 200px;
     }
     card-container {
-      border: 1px solid ${color.primary};
       margin: ${dim.spacing.xs};
       padding: ${dim.spacing.xs};
     }
     .hints {
+      border: 1px solid ${color.primary};
       min-height: 4.5rem;
+      transition: min-height 0.1s ease-in-out;
+    }
+    .bumper {
+      position: relative;
+      border: 1px solid transparent;
+    }
+    .bumper .fake-content {
+      min-height: 4.5rem;
+      padding: ${dim.spacing.xs};
+    }
+    .hints {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    .hints.details {
+      border: 1px solid ${color.active};
+      min-height: 85vh;
+      transition: min-height 0.1s ease-in-out;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .lift-history {
+      flex: 1 1;
+      overflow-y: auto;
     }
   `;
 
@@ -201,9 +233,27 @@ ${historyText + currentText}</textarea
         }}
         .value=${currentText}
       ></textarea>
-      <card-container>
-        <div class="hints">${this.renderHints()}</div>
-      </card-container>
+      <div class="bumper">
+        <div class="fake-content">${this.renderHints()}</div>
+        <card-container class="hints${this.detailsLift ? " details" : ""}">
+          <div
+            @click=${() => {
+              if (this.detailsLift) {
+                this.detailsLift = undefined;
+                return;
+              }
+
+              if (this.selectedLift) {
+                this.currentTextArea?.blur();
+                this.detailsLift = this.selectedLift;
+              }
+            }}
+          >
+            ${this.renderHints()}
+          </div>
+          ${this.renderDetails()}
+        </card-container>
+      </div>
     `;
   }
 
@@ -243,6 +293,24 @@ ${historyText + currentText}</textarea
       ${relativeTime}
       <div>${renderPreviousLift()}</div>
     `;
+  }
+
+  private renderDetails() {
+    if (!this.detailsLift) {
+      return nothing;
+    }
+    return html`<div class="lift-history">
+      ${this._getLiftHistoryTask.render({
+        pending: () => {
+          return html`Loading...`;
+        },
+        complete: (lifts: Lift[]) => {
+          return html`<ul>${lifts.map((lift) => {
+            return html`<div>${lift.date}</div>`;
+          })}</ul>`;
+        }
+      })}
+    </div>`;
   }
 
   private async saveLog() {
@@ -356,6 +424,15 @@ ${historyText + currentText}</textarea
       return { historyText, currentText, errors };
     },
     args: () => [this.log],
+  });
+
+  private _getLiftHistoryTask = new Task(this, {
+    task: async ([lift], {}) => {
+      if (!lift) {
+        return [];
+      }
+      return this.cache.liftHistory(lift);
+    }, args: () => [this.detailsLift],
   });
 
   protected override willUpdate(_changedProperties: PropertyValues): void {

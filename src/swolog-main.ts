@@ -45,7 +45,7 @@ export class SwologMain extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      width: 100%;
+      width: 100vw;
       height: 100%;
       background: black;
     }

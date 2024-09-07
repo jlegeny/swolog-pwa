@@ -27,6 +27,10 @@ export class LiftCache {
     return this.sessions[this.sessions.length - 1];
   }
 
+  liftHistory = (lift: Lift): Lift[] => {
+    return this.shorthandToAllLifts.get(lift.shorthand) ?? [];
+  }
+
   dateAtLine = (line: number): string | undefined => {
     for (const session of this.sessions) {
       if (session.startLine <= line && line <= session.endLine) {
