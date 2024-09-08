@@ -11,6 +11,9 @@ import { consume } from "@lit/context";
 import { Task } from "@lit/task";
 import { Temporal } from "temporal-polyfill";
 
+import { provide } from "@lit/context";
+
+import { cacheContext } from "./lift-cache-context";
 import { type IDB, dbContext } from "./indexdb-context";
 import { Lift, Log } from "./lib/data";
 import { LiftCache } from "./lib/lift-cache";
@@ -23,6 +26,7 @@ import { ParseError } from "./lib/parser";
 
 import "./card-container";
 import "./history-log";
+import "./lift-details";
 
 /**
  * Main App element.
@@ -35,10 +39,11 @@ export class WorkoutView extends LitElement {
 
   @property({ attribute: false }) log!: Log;
 
-  @state() cache: LiftCache = new LiftCache([]);
+  @provide({ context: cacheContext })
+  cache: LiftCache = new LiftCache([]);
+
   @state() selectedLift?: Lift;
-  @state() previousLift?: Lift;
-  @state() detailsLift?: Lift;
+  @state() expandedDetails = false;
   @state() highlight: Highlight = {};
 
   @state() editing: boolean = false;
@@ -125,7 +130,7 @@ ${historyText + currentText}</textarea
       position: relative;
     }
     main:has(.details) history-log {
-      pointer-events: none;
+      /* pointer-events: none; */
     }
 
     textarea:focus {
@@ -145,36 +150,34 @@ ${historyText + currentText}</textarea
       margin: ${dim.spacing.xs};
       padding: ${dim.spacing.xs};
     }
-    .hints {
+    .details {
       border: 1px solid ${color.primary};
-      min-height: 4.5rem;
-      transition: min-height 0.1s ease-in-out;
+      height: 6rem;
+      transition-property: height;
+      transition-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.53);
+      transition-duration: 0.3s;
+      overflow: hidden;
     }
     .bumper {
       position: relative;
       border: 1px solid transparent;
     }
-    .bumper .fake-content {
-      min-height: 4.5rem;
+    .bumper .filler {
+      height: 6rem;
       padding: ${dim.spacing.xs};
     }
-    .hints {
+    .details {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
     }
-    .hints.details {
+    .details:has(lift-details[expanded]) {
       border: 1px solid ${color.active};
-      min-height: 85vh;
-      transition: min-height 0.1s ease-in-out;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .lift-history {
-      flex: 1 1;
-      overflow-y: auto;
+      height: 45vh;
+      transition-property: height;
+      transition-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.53);
+      transition-duration: 0.3s;
     }
   `;
 
@@ -234,83 +237,21 @@ ${historyText + currentText}</textarea
         .value=${currentText}
       ></textarea>
       <div class="bumper">
-        <div class="fake-content">${this.renderHints()}</div>
-        <card-container class="hints${this.detailsLift ? " details" : ""}">
-          <div
-            @click=${() => {
-              if (this.detailsLift) {
-                this.detailsLift = undefined;
-                return;
-              }
-
-              if (this.selectedLift) {
-                this.currentTextArea?.blur();
-                this.detailsLift = this.selectedLift;
-              }
+        <div class="filler"></div>
+        <card-container class="details">
+          <lift-details
+            .lift=${this.selectedLift}
+            ?expanded=${this.expandedDetails}
+            @expand=${() => {
+              this.expandedDetails = true;
             }}
-          >
-            ${this.renderHints()}
-          </div>
-          ${this.renderDetails()}
+            @collapse=${() => {
+              this.expandedDetails = false;
+            }}
+          ></lift-details>
         </card-container>
       </div>
     `;
-  }
-
-  private renderHints() {
-    if (!this.selectedLift) {
-      return nothing;
-    }
-    const renderPreviousLift = () => {
-      if (!this.previousLift) {
-        return nothing;
-      }
-      return html`${this.previousLift.work}`;
-    };
-
-    let relativeTime: TemplateResult | typeof nothing = nothing;
-    if (this.previousLift?.date) {
-      let timeDiff: Temporal.Duration | undefined = undefined;
-
-      const previousLiftDate = Temporal.PlainDate.from(this.previousLift.date);
-
-      const isSelectedLiftToday =
-        Temporal.Now.plainDateISO().toString() === this.selectedLift.date;
-      if (isSelectedLiftToday) {
-        const now = Temporal.Now.plainDateISO();
-        timeDiff = previousLiftDate.until(now);
-        relativeTime = html`<div>${timeDiff.days} days ago</div>`;
-      } else if (this.selectedLift.date) {
-        const selectedLiftDate = Temporal.PlainDate.from(
-          this.selectedLift.date
-        );
-        timeDiff = previousLiftDate.until(selectedLiftDate);
-        relativeTime = html`<div>${timeDiff.days} days before</div>`;
-      }
-    }
-    return html`
-      <div>${this.selectedLift.shorthand}</div>
-      ${relativeTime}
-      <div>${renderPreviousLift()}</div>
-    `;
-  }
-
-  private renderDetails() {
-    if (!this.detailsLift) {
-      return nothing;
-    }
-    return html`<div class="lift-history">
-      ${this._getLiftHistoryTask.render({
-        pending: () => {
-          return html`Loading...`;
-        },
-        complete: (lifts: Lift[]) => {
-          return html`<ul>${lifts.map((lift) => {
-            return html`<div>${lift.date}</div>`;
-          })}</ul>`;
-        }
-      })}
-    </div>`;
   }
 
   private async saveLog() {
@@ -360,8 +301,6 @@ ${historyText + currentText}</textarea
       return;
     }
     this.selectedLift = lift;
-    const previousLift = this.cache.findPreviousLift(lift.shorthand, lift.date);
-    this.previousLift = previousLift;
   }
 
   private async showHintsFromText(text: string) {
@@ -372,8 +311,6 @@ ${historyText + currentText}</textarea
         ...lift,
         date,
       };
-      const previousLift = this.cache.findPreviousLift(lift.shorthand, date);
-      this.previousLift = previousLift;
     } catch (e: unknown) {
       this.hideHints();
       if (e instanceof ParseError) {
@@ -386,7 +323,6 @@ ${historyText + currentText}</textarea
 
   private async hideHints() {
     this.selectedLift = undefined;
-    this.previousLift = undefined;
   }
 
   private _dispatchClosed() {
@@ -401,7 +337,7 @@ ${historyText + currentText}</textarea
     task: async ([log], {}) => {
       const { sessions, errors, metadata } = await this.parser.parseLog(log);
       console.debug(sessions, errors, metadata);
-      this.cache = new LiftCache(sessions);
+      this.cache.init(sessions);
 
       // We split the log in two if
       // - there is at least one previous session in the log
@@ -424,15 +360,6 @@ ${historyText + currentText}</textarea
       return { historyText, currentText, errors };
     },
     args: () => [this.log],
-  });
-
-  private _getLiftHistoryTask = new Task(this, {
-    task: async ([lift], {}) => {
-      if (!lift) {
-        return [];
-      }
-      return this.cache.liftHistory(lift);
-    }, args: () => [this.detailsLift],
   });
 
   protected override willUpdate(_changedProperties: PropertyValues): void {

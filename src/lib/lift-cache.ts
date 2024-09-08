@@ -6,6 +6,13 @@ export class LiftCache {
   private shorthandToAllLifts = new Map<string, Lift[]>();
 
   constructor(public sessions: Session[]) {
+    this.init(sessions);
+  }
+
+  public init(sessions: Session[]) {
+    this.sessions = [];
+    this.lineToLift.clear();
+    this.shorthandToAllLifts.clear();
     for (const session of sessions) {
       for (const lift of session.lifts) {
         if (!this.shorthandToAllLifts.has(lift.shorthand)) {
