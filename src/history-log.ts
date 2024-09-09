@@ -63,7 +63,7 @@ export class HistoryLog extends LitElement {
   public renderLine(index: number, text: string) {
     const line = index + 1;
     return html`<div
-      class="${line === this.highlight?.line && "highlight"}"
+      class="${line === this.highlight?.line ? "highlight" : ""}"
       @click=${() => {
         this._dispatchSelected(line);
       }}
