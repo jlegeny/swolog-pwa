@@ -10,7 +10,7 @@ export class LiftCache {
   }
 
   public init(sessions: Session[]) {
-    this.sessions = [];
+    this.sessions = sessions;
     this.lineToLift.clear();
     this.shorthandToAllLifts.clear();
     for (const session of sessions) {
