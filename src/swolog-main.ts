@@ -13,7 +13,7 @@ import "./log-select";
 import "./workout-view";
 import "./pwa-badge";
 
-const VERSION = "0.0.3";
+const VERSION = "0.0.4";
 
 /**
  * Main App element.
