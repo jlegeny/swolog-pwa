@@ -1,11 +1,4 @@
-import {
-  LitElement,
-  PropertyValues,
-  TemplateResult,
-  css,
-  html,
-  nothing,
-} from "lit";
+import { LitElement, PropertyValues, css, html, nothing } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 import { consume } from "@lit/context";
 import { Task } from "@lit/task";
@@ -82,35 +75,38 @@ export class WorkoutView extends LitElement {
           </button>
         </div>
       </header>
-      <main>
-        ${this._parseLogTask.render({
-          pending: () => html`
-            <history-log></history-log>
-            <textarea id="current" disabled>Loading...</textarea>
-          `,
-          complete: ({ historyText, currentText, errors }) => {
-            if (this.editing) {
-              return html`<textarea
-                autocorrect="off"
-                autocapitalize="off"
-                autocomplete="off"
-                spellcheck="false"
-                @keyup=${async () => {
-                  this.modified = true;
-                }}
-                @paste=${() => {
-                  this.modified = true;
-                }}
-                class="editor"
-              >
+      <div class="content">
+        <main>
+          ${this._parseLogTask.render({
+            pending: () => html`
+              <history-log></history-log>
+              <textarea id="current" disabled>Loading...</textarea>
+            `,
+            complete: ({ historyText, currentText, errors }) => {
+              if (this.editing) {
+                return html`<textarea
+                  autocorrect="off"
+                  autocapitalize="off"
+                  autocomplete="off"
+                  spellcheck="false"
+                  @keyup=${async () => {
+                    this.modified = true;
+                  }}
+                  @paste=${() => {
+                    this.modified = true;
+                  }}
+                  class="editor"
+                >
 ${historyText + currentText}</textarea
-              >`;
-            } else {
-              return this.renderLog(historyText, currentText, errors);
-            }
-          },
-        })}
-      </main>
+                >`;
+              } else {
+                return this.renderLog(historyText, currentText, errors);
+              }
+            },
+          })}
+        </main>
+        ${this.renderDetails()}
+      </div>
     `;
   }
 
@@ -123,14 +119,24 @@ ${historyText + currentText}</textarea
     ${mixin.header}
     ${mixin.textarea}
 
-  main {
+    .content {
       display: flex;
       flex-direction: column;
       height: 100%;
       position: relative;
     }
-    main:has(.details) history-log {
-      /* pointer-events: none; */
+    main {
+      flex: 1 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    aside {
+      flex: 0 0 6.5rem;
+      position: relative;
+    }
+    .content:has(lift-details[expanded]) history-log {
+      pointer-events: none;
     }
 
     textarea:focus {
@@ -151,32 +157,23 @@ ${historyText + currentText}</textarea
       padding: ${dim.spacing.xs};
     }
     .details {
-      border: 1px solid ${color.primary};
-      height: 6rem;
-      transition-property: height;
-      transition-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.53);
-      transition-duration: 0.3s;
-      overflow: hidden;
-    }
-    .bumper {
-      position: relative;
-      border: 1px solid transparent;
-    }
-    .bumper .filler {
-      height: 6rem;
-      padding: ${dim.spacing.xs};
-    }
-    .details {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
+
+      border: 1px solid ${color.primary};
+      height: 6.5rem;
+      transition-property: height;
+      transition-timing-function: ease-in-out;
+      transition-duration: 0.3s;
+      overflow: hidden;
     }
     .details:has(lift-details[expanded]) {
       border: 1px solid ${color.active};
       height: 45vh;
       transition-property: height;
-      transition-timing-function: cubic-bezier(0.64, 0.57, 0.67, 1.53);
+      transition-timing-function: ease-in-out;
       transition-duration: 0.3s;
     }
   `;
@@ -236,8 +233,15 @@ ${historyText + currentText}</textarea
         }}
         .value=${currentText}
       ></textarea>
-      <div class="bumper">
-        <div class="filler"></div>
+    `;
+  }
+
+  private renderDetails() {
+    if (this.editing) {
+      return nothing;
+    }
+    return html`
+      <aside>
         <card-container class="details">
           <lift-details
             .lift=${this.selectedLift}
@@ -250,7 +254,7 @@ ${historyText + currentText}</textarea
             }}
           ></lift-details>
         </card-container>
-      </div>
+      </aside>
     `;
   }
 
@@ -273,6 +277,7 @@ ${historyText + currentText}</textarea
     if (this.editing) {
       this.editing = false;
     }
+    this._parseLogTask.run();
   }
 
   private async editLog() {
