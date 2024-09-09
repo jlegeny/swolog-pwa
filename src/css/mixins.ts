@@ -2,6 +2,12 @@ import { css } from 'lit'
 import * as color from './colors';
 import * as dim from './dimensions';
 
+export const reset = css`
+* {
+  touch-action: manipulation;
+}
+`;
+
 export const input = css`
 input {
   display: block;

@@ -15,6 +15,8 @@ import { Temporal } from "temporal-polyfill";
 import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
 
+import * as mixin from "./css/mixins";
+
 
 @customElement("lift-details")
 export class LiftDetails extends LitElement {
@@ -53,6 +55,9 @@ export class LiftDetails extends LitElement {
       min-height: 0;
       height: 100%;
     }
+
+    ${mixin.reset}
+
     .summary {
       flex: 0 0;
     }

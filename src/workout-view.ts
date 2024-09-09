@@ -116,6 +116,7 @@ ${historyText + currentText}</textarea
       height: 100%;
     }
 
+    ${mixin.reset}
     ${mixin.header}
     ${mixin.textarea}
 
