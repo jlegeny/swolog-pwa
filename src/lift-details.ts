@@ -4,7 +4,6 @@ import {
   nothing,
   html,
   PropertyValues,
-  TemplateResult,
 } from "lit";
 import { customElement, state, property } from "lit/decorators.js";
 import { consume } from "@lit/context";
@@ -16,8 +15,6 @@ import { Temporal } from "temporal-polyfill";
 import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
 
-import * as color from "./css/colors";
-import * as dim from "./css/dimensions";
 
 @customElement("lift-details")
 export class LiftDetails extends LitElement {
