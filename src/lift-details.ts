@@ -1,10 +1,4 @@
-import {
-  LitElement,
-  css,
-  nothing,
-  html,
-  PropertyValues,
-} from "lit";
+import { LitElement, css, nothing, html, PropertyValues } from "lit";
 import { customElement, state, property } from "lit/decorators.js";
 import { consume } from "@lit/context";
 import { Task } from "@lit/task";
@@ -15,8 +9,9 @@ import { Temporal } from "temporal-polyfill";
 import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
 
+import * as color from "./css/colors";
+import * as dim from "./css/dimensions";
 import * as mixin from "./css/mixins";
-
 
 @customElement("lift-details")
 export class LiftDetails extends LitElement {
@@ -34,7 +29,7 @@ export class LiftDetails extends LitElement {
       return nothing;
     }
     return html`
-      <div class="summary">
+      <div ?data-expanded=${this.expanded} class="summary">
         <div class="title">
           <span>${this.lift.shorthand}</span
           ><span @click=${this._dispatchExpandCollapse}
@@ -60,6 +55,11 @@ export class LiftDetails extends LitElement {
 
     .summary {
       flex: 0 0;
+      padding: ${dim.spacing.xs};
+    }
+    .summary[data-expanded] {
+      box-shadow: 0 4px 20px -5px ${color.shadow};
+      position: sticky;
     }
     .title {
       display: flex;
@@ -69,6 +69,17 @@ export class LiftDetails extends LitElement {
     .history {
       flex: 1 1;
       overflow-y: auto;
+    }
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+    ul li {
+      font-size: 1rem;
+      padding: ${dim.spacing.xs};
+    }
+    ul li:nth-child(2n + 1) {
+      background: ${color.bg.card.alt};
     }
   `;
 
@@ -118,7 +129,12 @@ export class LiftDetails extends LitElement {
         complete: (lifts: Lift[]) => {
           return html`<ul>
             ${lifts.map((lift) => {
-              return html`<div>${lift.date}</div>`;
+              return html`<li>
+                <div>
+                  <div>${lift.date}</div>
+                  <div>${lift.work}</div>
+                </div>
+              </li>`;
             })}
           </ul>`;
         },

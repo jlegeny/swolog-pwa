@@ -6,7 +6,7 @@ export const active = css`#ffffff`;
 export const text = {
   default: css`#e0e0e0`,
 }
-export const shadow = css`#060606`;
+export const shadow = css`#090606`;
 
 export const bg = {
   input: css`#181818`,

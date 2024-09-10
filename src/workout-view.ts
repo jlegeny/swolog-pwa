@@ -54,7 +54,7 @@ export class WorkoutView extends LitElement {
 
   render() {
     return html`
-      <header>
+      <header ?data-expanded=${this.expandedDetails}>
         <div class="left">
           ${this.editing
             ? html`<span
@@ -76,7 +76,7 @@ export class WorkoutView extends LitElement {
         </div>
       </header>
       <div class="content">
-        <main>
+        <main ?data-expanded=${this.expandedDetails}>
           ${this._parseLogTask.render({
             pending: () => html`
               <history-log></history-log>
@@ -120,6 +120,17 @@ ${historyText + currentText}</textarea
     ${mixin.header}
     ${mixin.textarea}
 
+    header {
+      transform: scale(1.0);
+      transition-property: transform, border-radius;
+      transition-duration: 0.2s;
+      transition-timing-function: ease-in-out;
+      border-radius: 0;
+    }
+    header[data-expanded] {
+      border-top-left-radius: ${dim.radius};
+      border-top-right-radius: ${dim.radius};
+    }
     .content {
       display: flex;
       flex-direction: column;
@@ -131,13 +142,18 @@ ${historyText + currentText}</textarea
       display: flex;
       flex-direction: column;
       min-height: 0;
+      transform: scale(1.0);
+      transform-origin: top;
+      transition: transform 0.2s ease-in-out;
+    }
+    header[data-expanded], main[data-expanded] {
+      pointer-events: none;
+      transform: scale(0.9);
+      filter: brightness(65%);
     }
     aside {
       flex: 0 0 6.5rem;
       position: relative;
-    }
-    .content:has(lift-details[expanded]) history-log {
-      pointer-events: none;
     }
 
     textarea:focus {
@@ -155,7 +171,6 @@ ${historyText + currentText}</textarea
     }
     card-container {
       margin: ${dim.spacing.xs};
-      padding: ${dim.spacing.xs};
     }
     .details {
       position: absolute;
@@ -171,8 +186,8 @@ ${historyText + currentText}</textarea
       overflow: hidden;
     }
     .details:has(lift-details[expanded]) {
-      border: 1px solid ${color.active};
-      height: 45vh;
+      border: none;
+      height: 85vh;
       transition-property: height;
       transition-timing-function: ease-in-out;
       transition-duration: 0.3s;
