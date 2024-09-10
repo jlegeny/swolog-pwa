@@ -8,6 +8,7 @@ import { cacheContext } from "./lift-cache-context";
 import { Temporal } from "temporal-polyfill";
 import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
+import { exerciseCache } from './lib/exercises';
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -31,7 +32,7 @@ export class LiftDetails extends LitElement {
     return html`
       <div ?data-expanded=${this.expanded} class="summary">
         <div class="title">
-          <span>${this.lift.shorthand}</span
+          <span>${this.renderTitle()}</span
           ><span @click=${this._dispatchExpandCollapse}
             >${this.expanded ? "Less" : "More"}</span
           >
@@ -93,6 +94,30 @@ export class LiftDetails extends LitElement {
       font-size: ${dim.text.aux};
     }
   `;
+
+  renderTitle() {
+    const shorthand = this.lift?.shorthand;
+    const modifiers = this.lift?.modifiers;
+    if (!shorthand) {
+      return nothing;
+    }
+    const exercise = exerciseCache.getExercise(shorthand);
+    if (exercise) {
+      if (modifiers?.length) {
+        return html`${exercise.name} (${
+          modifiers.map((shortcut) => {
+            const modifier = exerciseCache.getModifier(shortcut, exercise);
+            if (modifier) {
+              return modifier.name;
+            }
+            return '';
+          }).join(", ")
+        })`;
+      }
+      return html`${exercise.name}`;
+    }
+    return html`${shorthand}${modifiers?.length ? `#${modifiers.join('')}` : ''}`;
+  }
 
   renderRelativeDate() {
     if (!this.lift) {

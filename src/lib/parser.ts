@@ -134,14 +134,19 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
     console.debug(` .. remaining match [${str}]`);
   }
 
+  const matchPrefix = /(?<prefix>\w+) /.exec(str);
+  if (matchPrefix?.groups?.prefix) {
+    const prefix = matchPrefix?.groups?.prefix;
+    if (shortcuts?.has(prefix)) {
+      str = str.replace(prefix, shortcuts.get(prefix)!);
+    }
+  }
+
   const match = /(?<shorthand>\w+)(#(?<modifiers>\w+))?\ ?/.exec(str);
   if (!match?.groups?.shorthand) {
     throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
   let shorthand = match.groups?.shorthand;
-  if (shortcuts?.has(shorthand)) {
-    shorthand = shortcuts.get(shorthand)!;
-  }
   const work = str.slice(match[0].length);
   const modifiersString = match.groups?.modifiers;
   const modifiers = modifiersString?.split(/(?=[A-Z])/g);
