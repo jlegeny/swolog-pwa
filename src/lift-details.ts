@@ -56,10 +56,13 @@ export class LiftDetails extends LitElement {
     .summary {
       flex: 0 0;
       padding: ${dim.spacing.xs};
+      background-color: ${color.bg.card.default};
+      transition: background-color 0.2s ease-in-out;
     }
     .summary[data-expanded] {
       box-shadow: 0 4px 20px -5px ${color.shadow};
       position: sticky;
+      background-color: ${color.bg.card.header};
     }
     .title {
       display: flex;
@@ -80,6 +83,14 @@ export class LiftDetails extends LitElement {
     }
     ul li:nth-child(2n + 1) {
       background: ${color.bg.card.alt};
+    }
+    ul li[data-current] {
+      font-weight: bold;
+      background-color: ${color.bg.card.dark};
+    }
+    ul li div div:nth-child(1) {
+      color: ${color.text.aux};
+      font-size: ${dim.text.aux};
     }
   `;
 
@@ -128,8 +139,8 @@ export class LiftDetails extends LitElement {
         },
         complete: (lifts: Lift[]) => {
           return html`<ul>
-            ${lifts.map((lift) => {
-              return html`<li>
+            ${lifts.reversedMap((lift) => {
+              return html`<li ?data-current=${lift.date == this.lift?.date}>
                 <div>
                   <div>${lift.date}</div>
                   <div>${lift.work}</div>
