@@ -47,6 +47,8 @@ export class WorkoutView extends LitElement {
   @query(".current") currentTextArea?: HTMLTextAreaElement;
   @query(".editor") editorTextArea?: HTMLTextAreaElement;
 
+  private shortcuts = new Map<string, string>();
+
   parser = new ComlinkWorker<typeof import("./worker-parser")>(
     new URL("./worker-parser", import.meta.url),
     {}
@@ -121,7 +123,7 @@ ${historyText + currentText}</textarea
     ${mixin.textarea}
 
     header {
-      transform: scale(1.0);
+      transform: scale(1);
       transition-property: transform, border-radius;
       transition-duration: 0.2s;
       transition-timing-function: ease-in-out;
@@ -142,11 +144,12 @@ ${historyText + currentText}</textarea
       display: flex;
       flex-direction: column;
       min-height: 0;
-      transform: scale(1.0);
+      transform: scale(1);
       transform-origin: top;
       transition: transform 0.2s ease-in-out;
     }
-    header[data-expanded], main[data-expanded] {
+    header[data-expanded],
+    main[data-expanded] {
       pointer-events: none;
       transform: scale(0.9);
       filter: brightness(65%);
@@ -327,7 +330,7 @@ ${historyText + currentText}</textarea
   private async showHintsFromText(text: string) {
     let date = Temporal.Now.plainDateISO().toString();
     try {
-      const lift = await this.parser.parseLift(text);
+      const lift = await this.parser.parseLift(text, this.shortcuts);
       this.selectedLift = {
         ...lift,
         date,
@@ -356,9 +359,11 @@ ${historyText + currentText}</textarea
 
   private _parseLogTask = new Task(this, {
     task: async ([log], {}) => {
-      const { sessions, errors, metadata } = await this.parser.parseLog(log);
+      const { sessions, errors, metadata, shortcuts } =
+        await this.parser.parseLog(log);
       console.debug(sessions, errors, metadata);
       this.cache.init(sessions);
+      this.shortcuts = shortcuts;
 
       // We split the log in two if
       // - there is at least one previous session in the log

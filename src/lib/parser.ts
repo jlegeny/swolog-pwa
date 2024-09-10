@@ -1,6 +1,7 @@
 import { Log, Session, Lift } from "./data";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
 
 enum ParseErrorType {
@@ -26,10 +27,12 @@ export function parseLog(log: Log): {
   sessions: Session[];
   errors: Map<number, string>;
   metadata: ParsingMetadata;
+  shortcuts: Map<string, string>;
 } {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
+  const shortcuts = new Map<string, string>();
 
   console.group(`Parsing log ${log.id}`);
 
@@ -53,6 +56,18 @@ export function parseLog(log: Log): {
 
     // Filter out comments.
     if (line.match(/^#/)) {
+      continue lines;
+    }
+
+    // Match shortcuts.
+    const matchShortcut = RE_SHORTCUT.exec(line);
+    if (matchShortcut) {
+      if (matchShortcut.groups?.shortcut && matchShortcut.groups?.expansion) {
+        shortcuts.set(
+          matchShortcut.groups.shortcut,
+          matchShortcut.groups?.expansion
+        );
+      }
       continue lines;
     }
 
@@ -89,7 +104,7 @@ export function parseLog(log: Log): {
     }
 
     try {
-      const lift = parseLift(line);
+      const lift = parseLift(line, shortcuts);
       lift.line = lineNumber;
       currentSession?.lifts.push(lift);
       console.debug(`Parsed lift`, lift);
@@ -104,10 +119,10 @@ export function parseLog(log: Log): {
   }
   console.groupEnd();
 
-  return { sessions, errors, metadata };
+  return { sessions, errors, metadata, shortcuts };
 }
 
-export function parseLift(line: string): Lift {
+export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
   let str = line;
   console.debug(`Parsing lift [${str}]`);
 
@@ -123,13 +138,16 @@ export function parseLift(line: string): Lift {
   if (!match?.groups?.shorthand) {
     throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
-  const shorthand = match.groups?.shorthand;
+  let shorthand = match.groups?.shorthand;
+  if (shortcuts?.has(shorthand)) {
+    shorthand = shortcuts.get(shorthand)!;
+  }
   const work = str.slice(match[0].length);
   const modifiersString = match.groups?.modifiers;
   const modifiers = modifiersString?.split(/(?=[A-Z])/g);
 
   // Ignore all comments
-  const workWithoutComments = work.replace(/\([^)]+\)/g, '');
+  const workWithoutComments = work.replace(/\([^)]+\)/g, "");
 
   let groups = workWithoutComments.split(/;/);
   group: for (const group of groups) {

@@ -5,6 +5,6 @@ export const parseLog = (log: Log) => {
   return parser.parseLog(log);
 };
 
-export const parseLift = (line: string) => {
-  return parser.parseLift(line);
+export const parseLift = (line: string, shortcuts: Map<string, string>) => {
+  return parser.parseLift(line, shortcuts);
 };
