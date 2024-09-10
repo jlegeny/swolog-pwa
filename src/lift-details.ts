@@ -165,9 +165,24 @@ export class LiftDetails extends LitElement {
         complete: (lifts: Lift[]) => {
           return html`<ul>
             ${lifts.reversedMap((lift) => {
+              const exercise = exerciseCache.getExercise(lift.shorthand);
+              const modifiers = lift.modifiers;
+              let modifiersString = '';
+              if (exercise && modifiers?.length) {
+                 modifiersString = `(${
+                  modifiers.map((shortcut) => {
+                    const modifier = exerciseCache.getModifier(shortcut, exercise);
+                    if (modifier) {
+                      return modifier.name;
+                    }
+                    return '';
+                  }).join(", ")
+                })`;
+              }
+ 
               return html`<li ?data-current=${lift.date == this.lift?.date}>
                 <div>
-                  <div>${lift.date}</div>
+                  <div>${lift.date} ${modifiersString}</div>
                   <div>${lift.work}</div>
                 </div>
               </li>`;
