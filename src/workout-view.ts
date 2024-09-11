@@ -16,6 +16,7 @@ import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import { Highlight, HistoryLog } from "./history-log";
 import { ParseError } from "./lib/parser";
+import { exerciseCache } from './lib/exercises';
 
 import "./card-container";
 import "./history-log";
@@ -364,6 +365,16 @@ ${historyText + currentText}</textarea
       console.debug(sessions, errors, metadata);
       this.cache.init(sessions);
       this.shortcuts = shortcuts;
+
+      // Go through all Lifts in all sessions and issue warnings if needed.
+      const warnings = new Map<number, string>();
+      for (const session of sessions) {
+        for (const lift of session.lifts) {
+          if (!exerciseCache.getExercise(lift.shorthand)) {
+            warnings.set(lift.line ?? 0, `[lift.shorthand] does not correspond to an exercise`);
+          }
+        }
+      }
 
       // We split the log in two if
       // - there is at least one previous session in the log
