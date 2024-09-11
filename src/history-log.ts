@@ -13,6 +13,11 @@ export interface Highlight {
   };
 }
 
+export interface Annotation {
+  type: 'info'|'error'|'warning';
+  text: string;
+}
+
 /**
  * Main App element.
  */
@@ -20,7 +25,10 @@ export interface Highlight {
 export class HistoryLog extends LitElement {
   @property({ attribute: false }) text = "";
   @property({ attribute: false }) highlight?: Highlight;
-  @property({ attribute: false }) errors? = new Map<number, string>();
+  @property({ attribute: false }) annotations? = new Map<
+    number,
+    Annotation[]
+  >();
 
   @query(".container") container?: HTMLDivElement;
 
@@ -58,6 +66,10 @@ export class HistoryLog extends LitElement {
       background: ${color.bg.error};
       font-size: ${dim.text.aux};
     }
+    .content div .warning {
+      background: ${color.bg.warning};
+      font-size: ${dim.text.aux};
+    }
   `;
 
   public renderLine(index: number, text: string) {
@@ -69,12 +81,18 @@ export class HistoryLog extends LitElement {
       }}
     >
       ${text === "" ? html`<br />` : text}
-      ${this.errors?.has(line)
-        ? html`<div class="error">${this.errors.get(line)}</div>`
+      ${this.annotations?.has(line)
+        ? this.renderAnnotations(this.annotations.get(line) ?? [])
         : nothing}
     </div>`;
   }
 
+  private renderAnnotations(annotations: Annotation[]) {
+    return annotations.map(
+      (annotation) =>
+        html`<div class="${annotation.type}">${annotation.text}</div>`
+    );
+  }
   public scrollToBottom() {
     if (!this.container) {
       return;

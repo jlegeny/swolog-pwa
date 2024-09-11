@@ -134,7 +134,7 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
     console.debug(` .. remaining match [${str}]`);
   }
 
-  const matchPrefix = /(?<prefix>\w+) /.exec(str);
+  const matchPrefix = /(?<prefix>\w+) ?/.exec(str);
   if (matchPrefix?.groups?.prefix) {
     const prefix = matchPrefix?.groups?.prefix;
     if (shortcuts?.has(prefix)) {

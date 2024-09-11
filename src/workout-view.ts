@@ -17,6 +17,7 @@ import * as dim from "./css/dimensions";
 import { Highlight, HistoryLog } from "./history-log";
 import { ParseError } from "./lib/parser";
 import { exerciseCache } from './lib/exercises';
+import { Annotation } from './history-log';
 
 import "./card-container";
 import "./history-log";
@@ -85,7 +86,7 @@ export class WorkoutView extends LitElement {
               <history-log></history-log>
               <textarea id="current" disabled>Loading...</textarea>
             `,
-            complete: ({ historyText, currentText, errors }) => {
+            complete: ({ historyText, currentText, annotations }) => {
               if (this.editing) {
                 return html`<textarea
                   autocorrect="off"
@@ -103,7 +104,7 @@ export class WorkoutView extends LitElement {
 ${historyText + currentText}</textarea
                 >`;
               } else {
-                return this.renderLog(historyText, currentText, errors);
+                return this.renderLog(historyText, currentText, annotations);
               }
             },
           })}
@@ -201,13 +202,13 @@ ${historyText + currentText}</textarea
   private renderLog(
     historyText: string,
     currentText: string,
-    errors?: Map<number, string>
+    annotations?: Map<number, Annotation[]>
   ) {
     return html`
       <history-log
         .text=${historyText}
         .highlight=${this.highlight}
-        .errors=${errors}
+        .annotations=${annotations}
         @selected=${async (e: { detail: { line: number } }) => {
           const { line } = e.detail;
 
@@ -366,27 +367,42 @@ ${historyText + currentText}</textarea
       this.cache.init(sessions);
       this.shortcuts = shortcuts;
 
+      const annotations = new Map<number, Annotation[]>();
+      for (const [line, text] of errors) {
+        annotations.set(line, [{ type: "error", text }]);
+      }
+
       // Go through all Lifts in all sessions and issue warnings if needed.
-      const warnings = new Map<number, string>();
       for (const session of sessions) {
         for (const lift of session.lifts) {
           if (!exerciseCache.getExercise(lift.shorthand)) {
-            warnings.set(lift.line ?? 0, `[lift.shorthand] does not correspond to an exercise`);
+            if (!lift.line) {
+              continue;
+            }
+            if (!annotations.has(lift.line)) {
+              annotations.set(lift.line, [
+                {
+                  type: "warning",
+                  text: `[${lift.shorthand}] does not correspond to an exercise`,
+                },
+              ]);
+            }
           }
         }
       }
+      console.log(annotations);
 
       // We split the log in two if
       // - there is at least one previous session in the log
       // - this last session has happened today
       const lastSession = this.cache.lastSession;
       if (!lastSession || !metadata.lastSessionStartLine) {
-        return { historyText: log.text, currentText: "", errors };
+        return { historyText: log.text, currentText: "", annotations };
       }
       const isToday =
         Temporal.Now.plainDateISO().toString() === lastSession.date;
       if (!isToday) {
-        return { historyText: log.text, currentText: "", errors };
+        return { historyText: log.text, currentText: "", annotations };
       }
       const lines = this.log.text.split(/\n/);
       const currentText = lines
@@ -394,7 +410,7 @@ ${historyText + currentText}</textarea
         .join("\n");
       const historyText = lines.join("\n");
 
-      return { historyText, currentText, errors };
+      return { historyText, currentText, annotations };
     },
     args: () => [this.log],
   });

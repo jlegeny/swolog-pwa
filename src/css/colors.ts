@@ -12,6 +12,7 @@ export const shadow = css`#090606`;
 export const bg = {
   input: css`#181818`,
   error: css`#f01010`,
+  warning: css`#c05010`,
   base: css`#121212`,
   card: {
     default: css`#282424`,
