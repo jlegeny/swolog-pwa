@@ -44,6 +44,7 @@ export class WorkoutView extends LitElement {
   @state() editing: boolean = false;
   @state() modified = false;
   @state() autosaveTimeout?: ReturnType<typeof setTimeout>;
+  @state() workingOut = false;
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
@@ -215,6 +216,7 @@ ${historyText + currentText}</textarea
           await this.showHintsAtLine(line);
         }}
       ></history-log>
+      ${this.workingOut ? html`
       <textarea
         class="current"
         autocorrect="off"
@@ -253,7 +255,7 @@ ${historyText + currentText}</textarea
           this.modified = true;
         }}
         .value=${currentText}
-      ></textarea>
+      ></textarea>` : nothing}
     `;
   }
 
