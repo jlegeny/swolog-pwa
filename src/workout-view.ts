@@ -44,7 +44,7 @@ export class WorkoutView extends LitElement {
   @state() editing: boolean = false;
   @state() modified = false;
   @state() autosaveTimeout?: ReturnType<typeof setTimeout>;
-  @state() workingOut = false;
+  @state() workingOut = true;
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
@@ -392,7 +392,6 @@ ${historyText + currentText}</textarea
           }
         }
       }
-      console.log(annotations);
 
       // We split the log in two if
       // - there is at least one previous session in the log
