@@ -216,46 +216,47 @@ ${historyText + currentText}</textarea
           await this.showHintsAtLine(line);
         }}
       ></history-log>
-      ${this.workingOut ? html`
-      <textarea
-        class="current"
-        autocorrect="off"
-        autocapitalize="off"
-        autocomplete="off"
-        spellcheck="false"
-        @click=${async (e: MouseEvent) => {
-          const textArea = e.target as HTMLTextAreaElement;
-          const { text } = getLineOnCursor(textArea);
-          if (!text) {
-            return;
-          }
-          await this.showHintsFromText(text);
-        }}
-        @blur=${() => {
-          setTimeout(() => {
-            window.scrollTo(0, 0);
-          }, 300);
-        }}
-        @keyup=${async (e: KeyboardEvent) => {
-          const textArea = e.target as HTMLTextAreaElement;
-          const { text } = getLineOnCursor(textArea);
-          if (!text) {
-            return;
-          }
-          this.modified = true;
-          if (this.autosaveTimeout) {
-            clearTimeout(this.autosaveTimeout);
-          }
-          this.autosaveTimeout = setTimeout(() => {
-            this.saveLog();
-          }, 5000);
-          await this.showHintsFromText(text);
-        }}
-        @paste=${() => {
-          this.modified = true;
-        }}
-        .value=${currentText}
-      ></textarea>` : nothing}
+      ${this.workingOut
+        ? html` <textarea
+            class="current"
+            autocorrect="off"
+            autocapitalize="off"
+            autocomplete="off"
+            spellcheck="false"
+            @click=${async (e: MouseEvent) => {
+              const textArea = e.target as HTMLTextAreaElement;
+              const { text } = getLineOnCursor(textArea);
+              if (!text) {
+                return;
+              }
+              await this.showHintsFromText(text);
+            }}
+            @blur=${() => {
+              setTimeout(() => {
+                window.scrollTo(0, 0);
+              }, 300);
+            }}
+            @keyup=${async (e: KeyboardEvent) => {
+              const textArea = e.target as HTMLTextAreaElement;
+              const { text } = getLineOnCursor(textArea);
+              if (!text) {
+                return;
+              }
+              this.modified = true;
+              if (this.autosaveTimeout) {
+                clearTimeout(this.autosaveTimeout);
+              }
+              this.autosaveTimeout = setTimeout(() => {
+                this.saveLog({ autosave: true });
+              }, 5000);
+              await this.showHintsFromText(text);
+            }}
+            @paste=${() => {
+              this.modified = true;
+            }}
+            .value=${currentText}
+          ></textarea>`
+        : nothing}
     `;
   }
 
@@ -281,7 +282,7 @@ ${historyText + currentText}</textarea
     `;
   }
 
-  private async saveLog() {
+  private async saveLog(options?: { autosave?: boolean }) {
     clearTimeout(this.autosaveTimeout);
     if (this.editing) {
       this.log.text = this.editorTextArea?.value ?? "";
@@ -300,7 +301,9 @@ ${historyText + currentText}</textarea
     if (this.editing) {
       this.editing = false;
     }
-    this._parseLogTask.run();
+    if (!options?.autosave) {
+      this._parseLogTask.run();
+    }
   }
 
   private async editLog() {
@@ -344,7 +347,7 @@ ${historyText + currentText}</textarea
       if (e instanceof ParseError) {
         console.error(`Parsing error for text ${text} : ${e.toString()}`);
       } else {
-        console.error(e);
+        console.error("Unknown error", e);
       }
     }
   }
