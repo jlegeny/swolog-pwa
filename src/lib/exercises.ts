@@ -368,6 +368,18 @@ export const exercises: Exercise[] = [
       { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
     ],
   },
+  // Glutes
+  {
+    name: "Donkey Kick",
+    shorthand: "Kick",
+    target: [Muscle.glutes],
+    auxiliary: [Muscle.hamstrings],
+    modifiers: [
+      ...machines,
+      { name: "Body Weight", shortcut: "Bw" },
+      { name: "Cable", shortcut: "C" },
+    ],
+  },
   // Lower Back and Hamstrings
   {
     name: "Good Mornings",
