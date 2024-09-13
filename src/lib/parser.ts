@@ -142,7 +142,7 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
     }
   }
 
-  const match = /(?<shorthand>\w+)(#(?<modifiers>\w+))?\ ?/.exec(str);
+  const match = /(?<shorthand>[A-Za-z]\w*)(#(?<modifiers>\w+))?\ ?/.exec(str);
   if (!match?.groups?.shorthand) {
     throw new ParseError(ParseErrorType.INVALID_SHORTHAND, line);
   }
