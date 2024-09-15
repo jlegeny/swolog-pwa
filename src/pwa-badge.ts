@@ -8,7 +8,7 @@ import { registerSW } from "virtual:pwa-register";
 @customElement("pwa-badge")
 export class PwaBadge extends LitElement {
   @property({ type: Number })
-  private _period = 30 * 60 * 1000; // check for updates 30 minutes
+  private _period = 5 * 60 * 1000; // check for updates 30 minutes
   @property({ type: Boolean })
   private _swActivated = false;
   @state()
