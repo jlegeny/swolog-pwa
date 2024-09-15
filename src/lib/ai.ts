@@ -5,13 +5,13 @@ export const inferSessionTitle = (
   auxMuscles: Set<Muscle>
 ) => {
   let upperPull = 0;
-  // let upperPullMax = 0;
+  let upperPullMax = 0;
   let upperPush = 0;
-  // let upperPushMax = 0;
+  let upperPushMax = 0;
   let legs = 0;
-  // let legsMax = 0;
+  let legsMax = 0;
   let abs = 0;
-  // let absMax = 0;
+  let absMax = 0;
   let max = 0;
 
   const muscleImpact = (m: Muscle) => {
@@ -24,21 +24,29 @@ export const inferSessionTitle = (
     return 0;
   };
 
-  [Muscle.biceps, Muscle.lats, Muscle.lowerBack, Muscle.upperBack].forEach(
-    (m) => {
-      upperPull += muscleImpact(m);
-      max += muscleImpact(m);
-    }
-  );
+  [
+    Muscle.biceps,
+    Muscle.lats,
+    Muscle.lowerBack,
+    Muscle.upperBack,
+    Muscle.traps,
+    Muscle.sideDeltoids,
+  ].forEach((m) => {
+    upperPull += muscleImpact(m);
+    upperPullMax += 1;
+    max += muscleImpact(m);
+  });
 
-  [Muscle.pectoral, Muscle.triceps, Muscle.deltoids].forEach((m) => {
+  [Muscle.pectoral, Muscle.triceps, Muscle.frontDeltoids].forEach((m) => {
     upperPush += muscleImpact(m);
+    upperPushMax += 1;
     max += muscleImpact(m);
   });
 
   [Muscle.quads, Muscle.calves, Muscle.glutes, Muscle.hamstrings].forEach(
     (m) => {
       legs += muscleImpact(m);
+      legsMax += 1;
       max += muscleImpact(m);
     }
   );
@@ -48,11 +56,19 @@ export const inferSessionTitle = (
     // max += muscleImpact(m);
   });
 
-  const upperPullRatio = upperPull / max;
-  const upperPushRatio = upperPush / max;
-  const legsRatio = legs / max;
-  const absRatio = abs / max;
+  const upperPullRatio = upperPull && upperPull / upperPullMax;
+  const upperPushRatio = upperPush && upperPush / upperPushMax;
+  const legsRatio = legs && legs / legsMax;
+  const absRatio = abs && abs / max;
 
+  console.log(
+    "Pull",
+    upperPullRatio,
+    "Push",
+    upperPushRatio,
+    "Legs",
+    legsRatio
+  );
   if (upperPullRatio > upperPushRatio + legsRatio) {
     return "Pull";
   }

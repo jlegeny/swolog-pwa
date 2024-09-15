@@ -2,7 +2,8 @@ export enum Muscle {
   pectoral = "pectoral",
   triceps = "triceps",
   biceps = "biceps",
-  deltoids = "deltoids",
+  frontDeltoids = "frontDeltoids",
+  sideDeltoids = "sideDeltoids",
   lats = "lats",
   traps = "traps",
   quads = "quads",
@@ -76,14 +77,14 @@ export const exercises: Exercise[] = [
     name: "Push-Up",
     shorthand: "PushUp",
     target: [Muscle.pectoral],
-    auxiliary: [Muscle.triceps, Muscle.deltoids],
+    auxiliary: [Muscle.triceps, Muscle.frontDeltoids],
     modifiers: bodyWeight,
   },
   {
     name: "Dip",
     shorthand: "Dip",
     target: [Muscle.triceps],
-    auxiliary: [Muscle.pectoral, Muscle.deltoids],
+    auxiliary: [Muscle.pectoral, Muscle.frontDeltoids],
     modifiers: [
       { name: "Body Weight", shortcut: "Bw" },
       { name: "Machine", shortcut: "M" },
@@ -163,26 +164,26 @@ export const exercises: Exercise[] = [
   {
     name: "Shoulder Press",
     shorthand: "SHP",
-    target: [Muscle.deltoids],
+    target: [Muscle.frontDeltoids],
     auxiliary: [Muscle.triceps],
     modifiers: [...freeWeights, ...machines, ...seated],
   },
   {
     name: "Lateral Raise",
     shorthand: "LatR",
-    target: [Muscle.deltoids],
+    target: [Muscle.sideDeltoids],
     modifiers: [{ name: "Dumbbell", shortcut: "Db", multiplier: 2 }, ...cable],
   },
   {
     name: "Front Raise",
     shorthand: "FR",
-    target: [Muscle.deltoids],
+    target: [Muscle.frontDeltoids],
     modifiers: [{ name: "Dumbbell", shortcut: "Db", multiplier: 2 }],
   },
   {
     name: "Reverse Fly",
     shorthand: "RFly",
-    target: [Muscle.deltoids],
+    target: [Muscle.sideDeltoids],
     auxiliary: [Muscle.traps],
     modifiers: [
       ...machines,
@@ -193,14 +194,14 @@ export const exercises: Exercise[] = [
   {
     name: "Delts Machine",
     shorthand: "DeltM",
-    target: [Muscle.deltoids],
+    target: [Muscle.sideDeltoids],
     modifiers: machines,
   },
   // Shoulders and Upper Back
   {
     name: "Upright Row",
     shorthand: "URow",
-    target: [Muscle.deltoids, Muscle.traps],
+    target: [Muscle.sideDeltoids, Muscle.traps],
     modifiers: freeWeights,
   },
   {
@@ -215,7 +216,7 @@ export const exercises: Exercise[] = [
   {
     name: "Face Pull",
     shorthand: "FP",
-    target: [Muscle.deltoids, Muscle.traps],
+    target: [Muscle.sideDeltoids, Muscle.traps],
     auxiliary: [Muscle.upperBack],
     modifiers: [{ name: "Cable", shortcut: "C" }],
   },
