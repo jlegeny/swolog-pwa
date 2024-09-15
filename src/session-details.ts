@@ -1,14 +1,10 @@
 import { LitElement, css, nothing, html, PropertyValues } from "lit";
-import { customElement, state, property } from "lit/decorators.js";
-import { consume } from "@lit/context";
-import { Task } from "@lit/task";
+import { customElement, property } from "lit/decorators.js";
 
-import { cacheContext } from "./lift-cache-context";
 
-import { Temporal } from "temporal-polyfill";
-import { Lift, Session } from "./lib/data";
-import { LiftCache } from "./lift-cache-context";
-import { exerciseCache } from './lib/exercises';
+import { Session } from "./lib/data";
+import { Muscle, exerciseCache } from "./lib/exercises";
+import { inferSessionTitle } from "./lib/ai";
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -16,12 +12,13 @@ import * as mixin from "./css/mixins";
 
 @customElement("session-details")
 export class SessionDetails extends LitElement {
-  @consume({ context: cacheContext })
-  @state()
-  private cache?: LiftCache;
-
   @property({ attribute: false }) session?: Session;
   @property({ type: Boolean }) expanded = false;
+
+  sessionData = {
+    mainGroups: new Set<Muscle>(),
+    auxGroups: new Set<Muscle>(),
+  };
 
   override render() {
     if (!this.session) {
@@ -37,6 +34,7 @@ export class SessionDetails extends LitElement {
         </div>
         <div>${this.renderDuration(this.session)}</div>
       </div>
+      <div class="details">${this.renderMuscleGroups()}</div>
     `;
   }
 
@@ -65,10 +63,19 @@ export class SessionDetails extends LitElement {
       display: flex;
       justify-content: space-between;
     }
+    .details {
+      flex: 1 1;
+      overflow-y: auto;
+      padding: ${dim.spacing.xs};
+    }
   `;
 
   renderTitle(session: Session) {
-    return html`${session.date}`;
+    return html`${session.date} -
+    ${inferSessionTitle(
+      this.sessionData.mainGroups,
+      this.sessionData.auxGroups
+    )}`;
   }
 
   renderDuration(session: Session) {
@@ -76,6 +83,24 @@ export class SessionDetails extends LitElement {
       return nothing;
     }
     return html`${session.duration}`;
+  }
+
+  renderMuscleGroups() {
+    if (!this.expanded) {
+      return nothing;
+    }
+    const mainGroupsArray = Array.from(this.sessionData.mainGroups).sort();
+    const auxGroupsArray = Array.from(this.sessionData.auxGroups).sort();
+    return html`
+      <h3>Targeted muscles</h3>
+      <ul>
+        ${mainGroupsArray.map((muscle) => html`<li>${muscle}</li>`)}
+      </ul>
+      <h3>Auxiliary muscles</h3>
+      <ul>
+        ${auxGroupsArray.map((muscle) => html`<li>${muscle}</li>`)}
+      </ul>
+    `;
   }
 
   // Events
@@ -92,6 +117,31 @@ export class SessionDetails extends LitElement {
     }
   }
 
+  protected override willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has("session")) {
+      const mainGroups = new Set<Muscle>();
+      const auxGroups = new Set<Muscle>();
+      for (const lift of this.session?.lifts ?? []) {
+        const exercise = exerciseCache.getExercise(lift.shorthand);
+        if (!exercise) {
+          continue;
+        }
+        for (const muscle of exercise.target) {
+          mainGroups.add(muscle);
+        }
+        for (const muscle of exercise.auxiliary ?? []) {
+          auxGroups.add(muscle);
+        }
+      }
+      for (const muscle of mainGroups) {
+        auxGroups.delete(muscle);
+      }
+      this.sessionData = {
+        mainGroups,
+        auxGroups,
+      };
+    }
+  }
 }
 
 declare global {
