@@ -3,6 +3,7 @@ import { Log, Session, Lift } from "./data";
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
+const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
   INVALID_SHORTHAND = "Invalid Shorthand",
@@ -93,6 +94,17 @@ export function parseLog(log: Log): {
       }
       sessions.push(currentSession);
       currentDate = date;
+      continue lines;
+    }
+
+    // Match session duration
+    const matchDuration = RE_DURATION.exec(line);
+    if (matchDuration) {
+      if (!currentSession) {
+        errors.set(lineNumber, "Duration specified outside of a session");
+        continue lines;
+      }
+      currentSession.duration = Number(matchDuration.groups?.minutes);
       continue lines;
     }
 

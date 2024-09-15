@@ -10,6 +10,7 @@ export interface Session {
   lifts: Lift[];
   startLine: number;
   endLine: number;
+  duration?: number; // in minutes
 }
 
 export interface Lift {
