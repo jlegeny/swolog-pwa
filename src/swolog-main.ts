@@ -1,5 +1,5 @@
 import { LitElement, css, nothing, html, PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, state, query } from "lit/decorators.js";
 import { provide } from "@lit/context";
 
 import { IDB } from "./lib/idb";
@@ -12,8 +12,9 @@ import * as dim from "./css/dimensions";
 import "./log-select";
 import "./workout-view";
 import "./pwa-badge";
+import { PwaBadge } from "./pwa-badge";
 
-const VERSION = "0.0.8";
+const VERSION = "0.0.9";
 
 /**
  * Main App element.
@@ -24,6 +25,8 @@ export class SwologMain extends LitElement {
   db = new IDB();
 
   @state() currentLog?: Log;
+
+  @query("pwa-badge") pwaBadge?: PwaBadge;
 
   constructor() {
     super();
@@ -117,6 +120,7 @@ export class SwologMain extends LitElement {
         this.currentLog = log;
       }
     }
+    this.pwaBadge?.forceRefresh();
   }
 }
 

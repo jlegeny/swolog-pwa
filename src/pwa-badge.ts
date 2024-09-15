@@ -15,10 +15,13 @@ export class PwaBadge extends LitElement {
   private _offlineReady = false;
   @state()
   private _needRefresh = false;
+  @state() _refreshServiceWorker: () => Promise<void> = async () => {};
   @property()
   private _updateServiceWorker:
     | undefined
     | ((reloadPage?: boolean) => Promise<void>);
+
+  refreshTimeout?: ReturnType<typeof setTimeout>;
 
   firstUpdated() {
     this._updateServiceWorker = registerSW({
@@ -62,6 +65,11 @@ export class PwaBadge extends LitElement {
     `;
   }
 
+  forceRefresh() {
+    clearTimeout(this.refreshTimeout);
+    this._refreshServiceWorker();
+  }
+
   private _refreshApp() {
     if (this._updateServiceWorker && this._needRefresh)
       this._updateServiceWorker();
@@ -89,19 +97,27 @@ export class PwaBadge extends LitElement {
   private _registerPeriodicSync(swUrl: string, r: ServiceWorkerRegistration) {
     if (this._period <= 0) return;
 
-    setInterval(async () => {
-      if ("onLine" in navigator && !navigator.onLine) return;
+    this._refreshServiceWorker = async () => {
+      try {
+        if ("onLine" in navigator && !navigator.onLine) return;
 
-      const resp = await fetch(swUrl, {
-        cache: "no-store",
-        headers: {
+        const resp = await fetch(swUrl, {
           cache: "no-store",
-          "cache-control": "no-cache",
-        },
-      });
+          headers: {
+            cache: "no-store",
+            "cache-control": "no-cache",
+          },
+        });
 
-      if (resp?.status === 200) await r.update();
-    }, this._period);
+        if (resp?.status === 200) await r.update();
+      } finally {
+        this.refreshTimeout = setTimeout(
+          this._refreshServiceWorker,
+          this._period
+        );
+      }
+    };
+    this.refreshTimeout = setTimeout(this._refreshServiceWorker, this._period);
   }
 
   static styles = css`
