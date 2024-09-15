@@ -500,9 +500,20 @@ ${historyText + currentText}</textarea
   });
 
   protected override willUpdate(_changedProperties: PropertyValues): void {
-    this.highlight = {
-      line: this.selectedLift?.line,
-    };
+    if (this.selectedLift) {
+      this.highlight = {
+        line: this.selectedLift.line,
+      };
+    } else if (this.selectedSession) {
+      this.highlight = {
+        region: {
+          start: this.selectedSession.startLine,
+          end: this.selectedSession.endLine,
+        },
+      };
+    } else {
+      this.highlight = {};
+    }
   }
 }
 

@@ -4,6 +4,8 @@ import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import "./card-container";
 
+import { ifDefined } from "lit/directives/if-defined.js";
+
 export interface Highlight {
   line?: number;
   lines?: number[];
@@ -59,8 +61,14 @@ export class HistoryLog extends LitElement {
     .content div:nth-child(2n) {
       background-color: ${color.bg.table.alt};
     }
-    .content div.highlight {
+    .content div.hl {
       background-color: ${color.primary};
+    }
+    .content div.hl-region {
+      background-color: ${color.bg.table.highlight};
+    }
+    .content div:nth-child(2n).hl-region {
+      background-color: ${color.bg.table.highlightAlt};
     }
     .content div .error {
       background: ${color.bg.error};
@@ -74,8 +82,20 @@ export class HistoryLog extends LitElement {
 
   public renderLine(index: number, text: string) {
     const line = index + 1;
+    const highlightClass = () => {
+      if (!this.highlight) {
+        return nothing;
+      }
+      if (this.highlight.line === line) {
+        return "hl";
+      }
+      const region = this.highlight.region;
+      if (region && region.start <= line && line <= region.end) {
+        return "hl-region";
+      }
+    };
     return html`<div
-      class="${line === this.highlight?.line ? "highlight" : ""}"
+      class="${ifDefined(highlightClass())}"
       @click=${() => {
         this._dispatchSelected(line);
       }}

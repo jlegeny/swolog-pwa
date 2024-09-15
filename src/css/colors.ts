@@ -23,5 +23,7 @@ export const bg = {
   table: {
     default: css`#181818`,
     alt: css`#222222`,
+    highlight: css`#933d00`,
+    highlightAlt: css`#a34400`,
   },
 }

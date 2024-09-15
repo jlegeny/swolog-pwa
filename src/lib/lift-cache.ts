@@ -36,7 +36,7 @@ export class LiftCache {
 
   sessionAtLine = (line:number): Session|undefined => {
     for (const session of this.sessions) {
-      if (session.startLine >= line && line <= session.endLine) {
+      if (session.startLine <= line && line <= session.endLine) {
         return session;
       }
     }
