@@ -8,7 +8,7 @@ import { provide } from "@lit/context";
 
 import { cacheContext } from "./lift-cache-context";
 import { type IDB, dbContext } from "./indexdb-context";
-import { Lift, Log } from "./lib/data";
+import { Lift, Log, Session } from "./lib/data";
 import { LiftCache } from "./lib/lift-cache";
 import { getLineOnCursor } from "./lib/textarea-utils";
 import * as mixin from "./css/mixins";
@@ -16,12 +16,13 @@ import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import { Highlight, HistoryLog } from "./history-log";
 import { ParseError } from "./lib/parser";
-import { exerciseCache } from './lib/exercises';
-import { Annotation } from './history-log';
+import { exerciseCache } from "./lib/exercises";
+import { Annotation } from "./history-log";
 
 import "./card-container";
 import "./history-log";
 import "./lift-details";
+import "./session-details";
 
 /**
  * Main App element.
@@ -38,6 +39,7 @@ export class WorkoutView extends LitElement {
   cache: LiftCache = new LiftCache([]);
 
   @state() selectedLift?: Lift;
+  @state() selectedSession?: Session;
   @state() expandedDetails = false;
   @state() highlight: Highlight = {};
 
@@ -192,7 +194,8 @@ ${historyText + currentText}</textarea
       transition-duration: 0.3s;
       overflow: hidden;
     }
-    .details:has(lift-details[expanded]) {
+    .details:has(lift-details[expanded]),
+    .details:has(session-details[expanded]) {
       border: none;
       height: 85vh;
       transition-property: height;
@@ -265,26 +268,49 @@ ${historyText + currentText}</textarea
     if (this.editing) {
       return nothing;
     }
-    return html`
-      <aside>
+    if (this.selectedLift) {
+      return html`
+        <aside>
+          <card-container class="details">
+            <lift-details
+              .lift=${this.selectedLift}
+              ?expanded=${this.expandedDetails}
+              @expand=${() => {
+                const meta = document.querySelector("meta[name=theme-color]");
+                meta?.setAttribute("content", color.bg.base.cssText);
+                this.expandedDetails = true;
+              }}
+              @collapse=${() => {
+                const meta = document.querySelector("meta[name=theme-color]");
+                meta?.setAttribute("content", color.primary.cssText);
+                this.expandedDetails = false;
+              }}
+            ></lift-details>
+          </card-container>
+        </aside>
+      `;
+    }
+    if (this.selectedSession) {
+      return html`<aside>
         <card-container class="details">
-          <lift-details
-            .lift=${this.selectedLift}
+          <session-details
+            .session=${this.selectedSession}
             ?expanded=${this.expandedDetails}
             @expand=${() => {
-              const meta = document.querySelector('meta[name=theme-color]');
-              meta?.setAttribute('content', color.bg.base.cssText);
+              const meta = document.querySelector("meta[name=theme-color]");
+              meta?.setAttribute("content", color.bg.base.cssText);
               this.expandedDetails = true;
             }}
             @collapse=${() => {
-              const meta = document.querySelector('meta[name=theme-color]');
+              const meta = document.querySelector("meta[name=theme-color]");
               meta?.setAttribute("content", color.primary.cssText);
               this.expandedDetails = false;
             }}
-          ></lift-details>
+          ></session-details>
         </card-container>
-      </aside>
-    `;
+      </aside>`;
+    }
+    return html`<aside></aside>`;
   }
 
   private async saveLog(options?: { autosave?: boolean }) {
@@ -332,11 +358,18 @@ ${historyText + currentText}</textarea
 
   private async showHintsAtLine(line: number) {
     const lift = await this.cache.liftAtLine(line);
-    if (!lift?.date) {
-      this.hideHints();
+    if (lift?.date) {
+      this.selectedLift = lift;
+      this.selectedSession = undefined;
       return;
     }
-    this.selectedLift = lift;
+    const session = await this.cache.sessionAtLine(line);
+    if (session) {
+      this.selectedLift = undefined;
+      this.selectedSession = session;
+      return;
+    }
+    this.hideHints();
   }
 
   private async showHintsFromText(text: string) {
@@ -359,6 +392,7 @@ ${historyText + currentText}</textarea
 
   private async hideHints() {
     this.selectedLift = undefined;
+    this.selectedSession = undefined;
   }
 
   private _dispatchClosed() {

@@ -34,6 +34,15 @@ export class LiftCache {
     return this.sessions[this.sessions.length - 1];
   }
 
+  sessionAtLine = (line:number): Session|undefined => {
+    for (const session of this.sessions) {
+      if (session.startLine >= line && line <= session.endLine) {
+        return session;
+      }
+    }
+    return undefined;
+  }
+
   liftHistory = (lift: Lift): Lift[] => {
     return this.shorthandToAllLifts.get(lift.shorthand) ?? [];
   }
