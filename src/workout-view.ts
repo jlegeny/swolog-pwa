@@ -130,7 +130,8 @@ ${historyText + currentText}</textarea
       transition-property: transform, border-radius;
       transition-duration: 0.2s;
       transition-timing-function: ease-in-out;
-      border-radius: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
     header[data-expanded] {
       border-top-left-radius: ${dim.radius};
@@ -271,9 +272,13 @@ ${historyText + currentText}</textarea
             .lift=${this.selectedLift}
             ?expanded=${this.expandedDetails}
             @expand=${() => {
+              const meta = document.querySelector('meta[name=theme-color]');
+              meta?.setAttribute('content', color.bg.base.cssText);
               this.expandedDetails = true;
             }}
             @collapse=${() => {
+              const meta = document.querySelector('meta[name=theme-color]');
+              meta?.setAttribute("content", color.primary.cssText);
               this.expandedDetails = false;
             }}
           ></lift-details>
