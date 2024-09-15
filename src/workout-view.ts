@@ -61,27 +61,7 @@ export class WorkoutView extends LitElement {
 
   render() {
     return html`
-      <header ?data-expanded=${this.expandedDetails}>
-        <div class="left">
-          ${this.editing
-            ? html`<span
-                @click=${() => {
-                  this.modified = false;
-                  this.editing = false;
-                }}
-                >Cancel</span
-              >`
-            : html`<span @click=${this._dispatchClosed}>&lt; Back</span>`}
-        </div>
-        <div class="right">
-          ${this.editing
-            ? nothing
-            : html`<button @click=${this.editLog}>Edit</button>`}
-          <button ?disabled=${!this.modified} @click=${this.saveLog}>
-            Save
-          </button>
-        </div>
-      </header>
+      ${this.renderHeader()}
       <div class="content">
         <main ?data-expanded=${this.expandedDetails}>
           ${this._parseLogTask.render({
@@ -161,7 +141,7 @@ ${historyText + currentText}</textarea
       filter: brightness(65%);
     }
     aside {
-      flex: 0 0 6.5rem;
+      flex: 0 0 calc(6.5rem + 2 * ${dim.spacing.xs});
       position: relative;
     }
 
@@ -203,6 +183,62 @@ ${historyText + currentText}</textarea
       transition-duration: 0.3s;
     }
   `;
+
+  private renderHeader() {
+    const renderBackButton = () => {
+      if (this.editing) {
+        return html`<span
+          @click=${() => {
+            this.modified = false;
+            this.editing = false;
+          }}
+          >Cancel</span
+        >`;
+      }
+      return html`<span @click=${this._dispatchClosed}>&lt; Back</span>`;
+    };
+    const renderStartStopButton = () => {
+      if (this.editing) {
+        return nothing;
+      }
+      if (this.workingOut) {
+        return html`<button
+          @click=${() => {
+            this.workingOut = false;
+            this.saveLog();
+          }}
+        >
+          Stop
+        </button>`;
+      }
+      return html`<button
+        @click=${() => {
+          this.workingOut = true;
+          this._parseLogTask.run();
+        }}
+      >
+        Start
+      </button>`;
+    };
+
+    const renderEditButton = () => {
+      if (this.editing || this.workingOut) {
+        return nothing;
+      }
+      return html`<button @click=${this.editLog}>Edit</button>`;
+    };
+    return html`
+      <header ?data-expanded=${this.expandedDetails}>
+        <div class="left">${renderBackButton()}</div>
+        <div class="right">
+          ${renderStartStopButton()} ${renderEditButton()}
+          <button ?disabled=${!this.modified} @click=${this.saveLog}>
+            Save
+          </button>
+        </div>
+      </header>
+    `;
+  }
 
   private renderLog(
     historyText: string,
@@ -433,6 +469,11 @@ ${historyText + currentText}</textarea
             }
           }
         }
+      }
+
+      // If the workout it not started we don't split the log.
+      if (!this.workingOut) {
+        return { historyText: log.text, currentText: "", annotations };
       }
 
       // We split the log in two if
