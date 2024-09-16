@@ -1,14 +1,16 @@
 import { LitElement, css, nothing, html, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-
 import { Session } from "./lib/data";
 import { Muscle, exerciseCache } from "./lib/exercises";
 import { inferSessionTitle } from "./lib/ai";
+import { Effort } from './muscle-chart';
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import * as mixin from "./css/mixins";
+
+import "./muscle-chart";
 
 @customElement("session-details")
 export class SessionDetails extends LitElement {
@@ -33,6 +35,7 @@ export class SessionDetails extends LitElement {
           >
         </div>
         <div>${this.renderDuration(this.session)}</div>
+        ${this.renderMuscleChart()}
       </div>
       <div class="details">${this.renderMuscleGroups()}</div>
     `;
@@ -59,6 +62,16 @@ export class SessionDetails extends LitElement {
       position: sticky;
       background-color: ${color.bg.card.header};
     }
+    muscle-chart {
+      margin: 0 auto;
+      transform: scale(0.75) translate(0, -4em);
+      transform-origin: top;
+      transition: transform 0.2s ease-in-out;
+    }
+    .summary[data-expanded] muscle-chart {
+      transform: scale(1) translate(0, 0);
+      transition: transform 0.2s ease-in-out;
+    }
     .title {
       display: flex;
       justify-content: space-between;
@@ -71,11 +84,13 @@ export class SessionDetails extends LitElement {
   `;
 
   renderTitle(session: Session) {
-    return html`${session.date} -
-    ${inferSessionTitle(
-      this.sessionData.mainGroups,
-      this.sessionData.auxGroups
-    )}`;
+    return html`<div>${session.date}</div>
+      <div>
+        ${inferSessionTitle(
+          this.sessionData.mainGroups,
+          this.sessionData.auxGroups
+        )}
+      </div>`;
   }
 
   renderDuration(session: Session) {
@@ -101,6 +116,17 @@ export class SessionDetails extends LitElement {
         ${auxGroupsArray.map((muscle) => html`<li>${muscle}</li>`)}
       </ul>
     `;
+  }
+
+  renderMuscleChart() {
+    const effort = new Map<Muscle, Effort>();
+    this.sessionData.mainGroups.forEach((muscle) => {
+      effort.set(muscle, { primary: true });
+    });
+    this.sessionData.auxGroups.forEach((muscle) => {
+      effort.set(muscle, { aux: true });
+    });
+    return html`<muscle-chart .effort=${effort}></muscle-chart>`;
   }
 
   // Events

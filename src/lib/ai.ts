@@ -11,7 +11,7 @@ export const inferSessionTitle = (
   let legs = 0;
   let legsMax = 0;
   let abs = 0;
-  let absMax = 0;
+  // let absMax = 0;
   let max = 0;
 
   const muscleImpact = (m: Muscle) => {
@@ -37,7 +37,7 @@ export const inferSessionTitle = (
     max += muscleImpact(m);
   });
 
-  [Muscle.pectoral, Muscle.triceps, Muscle.frontDeltoids].forEach((m) => {
+  [Muscle.pectorals, Muscle.triceps, Muscle.frontDeltoids].forEach((m) => {
     upperPush += muscleImpact(m);
     upperPushMax += 1;
     max += muscleImpact(m);

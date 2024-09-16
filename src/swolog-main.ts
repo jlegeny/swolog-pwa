@@ -14,7 +14,7 @@ import "./workout-view";
 import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
 
-const VERSION = "0.0.9";
+const VERSION = "0.0.10";
 
 /**
  * Main App element.
