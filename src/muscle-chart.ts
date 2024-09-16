@@ -1,11 +1,10 @@
 import { LitElement, css, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { Muscle, exerciseCache } from "./lib/exercises";
+import { Muscle } from "./lib/exercises";
 
 import { classMap } from "lit/directives/class-map.js";
 
-import * as dim from "./css/dimensions";
 import * as color from "./css/colors";
 
 export interface Effort {
@@ -23,7 +22,6 @@ export class MuscleChart extends LitElement {
 
   render() {
     return html`<div class="container">
-      <!-- <img src="images/figure/silhouette.png"/> -->
       <div class="silhouette"></div>
       ${Object.values(Muscle).map((muscle) =>
         this.renderMuscle(muscle, this.effort.get(muscle))
