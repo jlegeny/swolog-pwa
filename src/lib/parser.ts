@@ -176,15 +176,18 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       continue group;
     }
     // Now split the group of weights by /
-    let groupWeights = match[0];
-    let weights = groupWeights.split(/\//);
-    for (const weight of weights) {
-      const match = RE_WEIGHT.exec(weight);
-      if (!match) {
-        throw new ParseError(ParseErrorType.INVALID_WEIGHT, weight);
+    let groupWeightsStr = match[0];
+    let weightsStr = groupWeightsStr.split(/\//);
+    const repsStr = str.slice(match[0].length);
+    const weights: number[] = [];
+    for (const weightStr of weightsStr) {
+      const match = RE_WEIGHT.exec(weightStr);
+      if (!match?.groups?.weight) {
+        throw new ParseError(ParseErrorType.INVALID_WEIGHT, weightStr);
       }
-      console.debug(`Weight ${match.groups?.weight}`);
+      weights.push(Number(match.groups.weight));
     }
+    console.debug(`Weight group [${weights.join(', ')}] Reps ${repsStr}`);
   }
 
   return {
