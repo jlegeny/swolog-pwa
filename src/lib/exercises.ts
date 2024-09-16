@@ -1,5 +1,6 @@
 export enum Muscle {
   pectorals = "pectorals",
+  adductor = "adductor",
   triceps = "triceps",
   biceps = "biceps",
   frontDeltoids = "frontDeltoids",
@@ -350,7 +351,7 @@ export const exercises: Exercise[] = [
   {
     name: "Adductor",
     shorthand: "ADD",
-    target: [Muscle.quads],
+    target: [Muscle.adductor],
     modifiers: [{ name: "Machine", shortcut: "M" }],
   },
   {
