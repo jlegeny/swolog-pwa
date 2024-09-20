@@ -5,6 +5,7 @@ export enum Muscle {
   biceps = "biceps",
   frontDeltoids = "frontDeltoids",
   sideDeltoids = "sideDeltoids",
+  anteriorDeltoids = "anteriorDeltoids",
   lats = "lats",
   traps = "traps",
   quads = "quads",
@@ -43,6 +44,7 @@ const bodyWeight: Modifier[] = [{ name: "Body Weight", shortcut: "Bw" }];
 const machines: Modifier[] = [{ name: "Machine", shortcut: "M" }];
 
 const seated: Modifier[] = [{ name: "Seated", shortcut: "S" }];
+const standing: Modifier = { name: "Standing", shortcut: "T" };
 
 const cable: Modifier[] = [{ name: "Cable", shortcut: "C" }];
 
@@ -52,13 +54,14 @@ export const exercises: Exercise[] = [
     name: "Bench Press",
     shorthand: "BP",
     target: [Muscle.pectorals],
+    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
     modifiers: freeWeights,
   },
   {
     name: "Incline Bench Press",
     shorthand: "IBP",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.triceps],
+    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
     modifiers: freeWeights,
   },
   {
@@ -72,13 +75,14 @@ export const exercises: Exercise[] = [
     name: "Chest Fly",
     shorthand: "Fly",
     target: [Muscle.pectorals],
+    auxiliary: [Muscle.anteriorDeltoids],
     modifiers: [{ name: "Cable", shortcut: "C" }, ...freeWeights],
   },
   {
     name: "Push-Up",
     shorthand: "PushUp",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.triceps, Muscle.frontDeltoids],
+    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
     modifiers: bodyWeight,
   },
   {
@@ -91,6 +95,15 @@ export const exercises: Exercise[] = [
       { name: "Machine", shortcut: "M" },
     ],
   },
+  // Chest
+  {
+    name: "Pec Deck",
+    shorthand: "Pect",
+    target: [Muscle.pectorals],
+    auxiliary: [Muscle.anteriorDeltoids],
+    modifiers: [{ name: "Machine", shortcut: "M" }],
+  },
+
   // Back
   {
     name: "Pull-Up",
@@ -166,8 +179,8 @@ export const exercises: Exercise[] = [
     name: "Shoulder Press",
     shorthand: "SHP",
     target: [Muscle.frontDeltoids],
-    auxiliary: [Muscle.triceps],
-    modifiers: [...freeWeights, ...machines, ...seated],
+    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    modifiers: [...freeWeights, ...machines, ...seated, standing],
   },
   {
     name: "Lateral Raise",
@@ -218,7 +231,7 @@ export const exercises: Exercise[] = [
     name: "Face Pull",
     shorthand: "FP",
     target: [Muscle.sideDeltoids, Muscle.traps],
-    auxiliary: [Muscle.upperBack],
+    auxiliary: [Muscle.frontDeltoids, Muscle.upperBack],
     modifiers: [{ name: "Cable", shortcut: "C" }],
   },
   // Arms
@@ -424,9 +437,21 @@ export const exercises: Exercise[] = [
     shorthand: "DBCrunch",
     target: [Muscle.abs],
     modifiers: [
-      { name: "Body Weight", shortcut: "BW" },
+      { name: "Body Weight", shortcut: "Bw" },
       { name: "Dumbbell", shortcut: "Db" },
     ],
+  },
+  {
+    name: "Abdominals",
+    shorthand: "Abs",
+    target: [Muscle.abs],
+    modifiers: [{ name: "Knee Tuck", shortcut: "Knt" }],
+  },
+  {
+    name: "Obliques",
+    shorthand: "Obl",
+    target: [Muscle.obliques],
+    modifiers: bodyWeight,
   },
 ];
 
