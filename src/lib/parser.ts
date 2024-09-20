@@ -3,11 +3,13 @@ import { Log, Session, Lift } from "./data";
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
+const RE_REP = /^(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
   INVALID_SHORTHAND = "Invalid Shorthand",
   INVALID_WEIGHT = "Invalid Weight",
+  INVALID_REP = "Invalid Rep",
 }
 
 export class ParseError extends Error {
@@ -178,7 +180,6 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
     // Now split the group of weights by /
     let groupWeightsStr = match[0];
     let weightsStr = groupWeightsStr.split(/\//);
-    const repsStr = str.slice(match[0].length);
     const weights: number[] = [];
     for (const weightStr of weightsStr) {
       const match = RE_WEIGHT.exec(weightStr);
@@ -187,6 +188,16 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       }
       weights.push(Number(match.groups.weight));
     }
+    const groupRepsStr = str.slice(match[0].length);
+    const repsStr = groupRepsStr.split(/,\s+/);
+    for (const repStr of repsStr) {
+      const match = RE_REP.exec(repStr.trim());
+      if (!match) {
+        throw new ParseError(ParseErrorType.INVALID_REP, `[${repStr}]`);
+      }
+      console.log('single', match.groups?.single);
+    }
+
     console.debug(`Weight group [${weights.join(', ')}] Reps ${repsStr}`);
   }
 
