@@ -29,13 +29,11 @@ export interface DropSet {
   reps: number[];
 }
 
-type ValueOf<Obj> = Obj[keyof Obj];
-type OneOnly<Obj, Key extends keyof Obj> = { [key in Exclude<keyof Obj, Key>]: null } & Pick<Obj, Key>;
-type OneOfByKey<Obj> = { [key in keyof Obj]: OneOnly<Obj, key> };
-export type OneOfType<Obj> = ValueOf<OneOfByKey<Obj>>;
-
-type Set = OneOfType<{simple: SimpleSet; split: SplitSet; drop: DropSet}>;
-
+export interface Set {
+  single: SimpleSet;
+  split: SplitSet;
+  drop: DropSet;
+}
 export interface Lift {
   shorthand: string;
   work: string;

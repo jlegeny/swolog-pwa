@@ -3,7 +3,7 @@ import { Log, Session, Lift } from "./data";
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
-const RE_REP = /^(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+))$/;
+const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+)))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
@@ -195,7 +195,9 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       if (!match) {
         throw new ParseError(ParseErrorType.INVALID_REP, `[${repStr}]`);
       }
-      console.log('single', match.groups?.single);
+      if (match.groups?.single) {
+      }
+      console.log('single', match.groups?.single, 'multi', match.groups?.multi, 'myo', match.groups?.myo);
     }
 
     console.debug(`Weight group [${weights.join(', ')}] Reps ${repsStr}`);
