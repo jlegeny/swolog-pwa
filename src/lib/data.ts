@@ -16,6 +16,7 @@ export interface Session {
 export interface SimpleSet {
   weight: number;
   reps: number;
+  myo?: boolean;
 }
 
 export interface SplitSet {
@@ -30,9 +31,9 @@ export interface DropSet {
 }
 
 export interface Set {
-  single: SimpleSet;
-  split: SplitSet;
-  drop: DropSet;
+  single?: SimpleSet;
+  split?: SplitSet;
+  drop?: DropSet;
 }
 export interface Lift {
   shorthand: string;

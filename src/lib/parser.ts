@@ -1,9 +1,9 @@
-import { Log, Session, Lift } from "./data";
+import { Log, Set, Session, Lift } from "./data";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
-const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+)))$/;
+const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+)*))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
@@ -18,7 +18,7 @@ export class ParseError extends Error {
     Object.setPrototypeOf(this, ParseError.prototype);
   }
   toString() {
-    return this.type;
+    return `${this.type} : ${this.message}`;
   }
 }
 
@@ -168,6 +168,8 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
   // Ignore all comments
   const workWithoutComments = work.replace(/\([^)]+\)/g, "");
 
+  const sets: Set[] = [];
+
   let groups = workWithoutComments.split(/;/);
   group: for (const group of groups) {
     let str = group.trim();
@@ -195,17 +197,78 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       if (!match) {
         throw new ParseError(ParseErrorType.INVALID_REP, `[${repStr}]`);
       }
+      console.debug('single', match.groups?.single, 'multi', match.groups?.multi, 'myo', match.groups?.myo);
       if (match.groups?.single) {
+        const reps = Number(match.groups.single);
+        console.debug('single rep amount', reps);
+        if (weights.length !== 1) {
+          throw new ParseError(
+            ParseErrorType.INVALID_REP,
+            `Expected one weight for a simple rep`
+          );
+        }
+        sets.push({
+          single: {
+            weight: weights[0],
+            reps: reps,
+          },
+        });
+      } else if (match.groups?.myo) {
+        const reps = eval(match.groups.myo);
+        console.debug('myo rep amount', reps);
+        if (weights.length !== 1) {
+          throw new ParseError(
+            ParseErrorType.INVALID_REP,
+            `Expected one weight for a simple rep`
+          );
+        }
+        sets.push({
+          single: {
+            weight: weights[0],
+            reps: reps,
+            myo: true,
+          },
+        });
+      } else if (match.groups?.multi) {
+        const multiRepsStr = match.groups.multi.split(/\//);
+        const multiReps: number[] = [];
+        for (const multiRepStr of multiRepsStr) {
+          const multiRep = Number(multiRepStr);
+          multiReps.push(multiRep);
+        }
+        console.debug('multi rep amounts', multiReps);
+        if (weights.length === 1 && multiReps.length == 2) {
+          sets.push({
+            split: {
+              weight: weights[0],
+              leftReps: multiReps[0],
+              rightReps: multiReps[1],
+            },
+          });
+        } else if (weights.length === multiReps.length) {
+          sets.push({
+            drop: {
+              weights,
+              reps: multiReps,
+            },
+          });
+        } else {
+          throw new ParseError(
+            ParseErrorType.INVALID_REP,
+            `Mismatched count of weigths and reps [${groupWeightsStr}] : [${groupRepsStr}]`
+          );
+        }
       }
-      console.log('single', match.groups?.single, 'multi', match.groups?.multi, 'myo', match.groups?.myo);
     }
 
     console.debug(`Weight group [${weights.join(', ')}] Reps ${repsStr}`);
   }
+  console.debug("sets", sets);
 
   return {
     shorthand,
     modifiers,
     work,
+    sets,
   };
 }
