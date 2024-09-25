@@ -78,7 +78,6 @@ export function parseLog(log: Log): {
     const matchDate = RE_DATE.exec(line);
     if (matchDate) {
       metadata.lastSessionStartLine = lineNumber - 1;
-      console.debug(`Matched Date at line ${lineNumber}`, matchDate);
       const date = line.trim();
       if (!date) {
         console.error(`Failed to parse date [${line}]`);
@@ -197,10 +196,8 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       if (!match) {
         throw new ParseError(ParseErrorType.INVALID_REP, `[${repStr}]`);
       }
-      console.debug('single', match.groups?.single, 'multi', match.groups?.multi, 'myo', match.groups?.myo);
       if (match.groups?.single) {
         const reps = Number(match.groups.single);
-        console.debug('single rep amount', reps);
         if (weights.length !== 1) {
           throw new ParseError(
             ParseErrorType.INVALID_REP,
@@ -215,7 +212,6 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
         });
       } else if (match.groups?.myo) {
         const reps = eval(match.groups.myo);
-        console.debug('myo rep amount', reps);
         if (weights.length !== 1) {
           throw new ParseError(
             ParseErrorType.INVALID_REP,
@@ -236,7 +232,6 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
           const multiRep = Number(multiRepStr);
           multiReps.push(multiRep);
         }
-        console.debug('multi rep amounts', multiReps);
         if (weights.length === 1 && multiReps.length == 2) {
           sets.push({
             split: {
@@ -260,10 +255,7 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
         }
       }
     }
-
-    console.debug(`Weight group [${weights.join(', ')}] Reps ${repsStr}`);
   }
-  console.debug("sets", sets);
 
   return {
     shorthand,
