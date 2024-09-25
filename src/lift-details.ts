@@ -10,6 +10,8 @@ import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
 import { exerciseCache } from './lib/exercises';
 
+import './muscle-chart';
+
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 import * as mixin from "./css/mixins";
@@ -39,6 +41,7 @@ export class LiftDetails extends LitElement {
         </div>
         <time>${this.renderRelativeDate()}</time>
         <div>${this.renderPreviousLift()}</div>
+        ${this.renderImpact()}
       </div>
       ${this.renderHistory()}
     `;
@@ -92,6 +95,9 @@ export class LiftDetails extends LitElement {
     ul li div div:nth-child(1) {
       color: ${color.text.aux};
       font-size: ${dim.text.aux};
+    }
+    .impact {
+      display: flex;
     }
   `;
 
@@ -148,6 +154,16 @@ export class LiftDetails extends LitElement {
       return nothing;
     }
     return html`<span>${this.previousLift.work}</span>`;
+  }
+
+  private renderImpact() {
+    if (!this.expanded) {
+      return nothing;
+    }
+    return html`<div class="impact">
+      <muscle-chart></muscle-chart>
+      <div></div>
+    </div>`;
   }
 
   private renderHistory() {

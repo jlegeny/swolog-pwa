@@ -3,7 +3,7 @@ import { Log, Set, Session, Lift } from "./data";
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
-const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+))|(?<myo>\d+(?:\+\d+)*))$/;
+const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
@@ -179,7 +179,7 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       continue group;
     }
     // Now split the group of weights by /
-    let groupWeightsStr = match[0];
+    let groupWeightsStr = match[0].trim();
     let weightsStr = groupWeightsStr.split(/\//);
     const weights: number[] = [];
     for (const weightStr of weightsStr) {
