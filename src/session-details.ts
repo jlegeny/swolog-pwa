@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 
 import { Session } from "./lib/data";
 import { Muscle, exerciseCache } from "./lib/exercises";
-import { inferSessionTitle } from "./lib/ai";
+import { inferSessionTitle, sessionFractionalSets } from "./lib/ai";
 import { Effort } from './muscle-chart';
 
 import * as color from "./css/colors";
@@ -20,6 +20,7 @@ export class SessionDetails extends LitElement {
   sessionData = {
     mainGroups: new Set<Muscle>(),
     auxGroups: new Set<Muscle>(),
+    fractionalSets: new Map<Muscle, number>(),
   };
 
   override render() {
@@ -109,11 +110,21 @@ export class SessionDetails extends LitElement {
     return html`
       <h3>Targeted muscles</h3>
       <ul>
-        ${mainGroupsArray.map((muscle) => html`<li>${muscle}</li>`)}
+        ${mainGroupsArray.map(
+          (muscle) =>
+            html`<li>
+              ${muscle} : ${this.sessionData.fractionalSets.get(muscle)}
+            </li>`
+        )}
       </ul>
       <h3>Auxiliary muscles</h3>
       <ul>
-        ${auxGroupsArray.map((muscle) => html`<li>${muscle}</li>`)}
+        ${auxGroupsArray.map(
+          (muscle) =>
+            html`<li>
+              ${muscle} : ${this.sessionData.fractionalSets.get(muscle)}
+            </li>`
+        )}
       </ul>
     `;
   }
@@ -147,7 +158,10 @@ export class SessionDetails extends LitElement {
     if (_changedProperties.has("session")) {
       const mainGroups = new Set<Muscle>();
       const auxGroups = new Set<Muscle>();
-      for (const lift of this.session?.lifts ?? []) {
+      if (!this.session) {
+        return;
+      }
+      for (const lift of this.session.lifts ?? []) {
         const exercise = exerciseCache.getExercise(lift.shorthand);
         if (!exercise) {
           continue;
@@ -165,6 +179,7 @@ export class SessionDetails extends LitElement {
       this.sessionData = {
         mainGroups,
         auxGroups,
+        fractionalSets: sessionFractionalSets(this.session),
       };
     }
   }

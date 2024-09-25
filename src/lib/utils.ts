@@ -20,3 +20,17 @@ if (!Array.prototype.reversed) {
     }
   };
 }
+
+
+export class MapWithDefault<K, V> extends Map {
+  get(key: K): V {
+    if (!this.has(key)) {
+      this.set(key, this.defaultValue);
+    }
+    return super.get(key);
+  }
+  
+  constructor(readonly defaultValue: V) {
+    super();
+  }
+}
