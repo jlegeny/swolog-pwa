@@ -84,7 +84,7 @@ export class HistoryLog extends LitElement {
     const line = index + 1;
     const highlightClass = () => {
       if (!this.highlight) {
-        return nothing;
+        return undefined;
       }
       if (this.highlight.line === line) {
         return "hl";
