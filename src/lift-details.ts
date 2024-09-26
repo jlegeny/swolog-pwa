@@ -39,7 +39,15 @@ export class LiftDetails extends LitElement {
             >${this.expanded ? "Less" : "More"}</span
           >
         </div>
-        <time>${this.renderRelativeDate()}</time>
+        <div class="effort">
+          <strong>${this.renderEffort(this.lift)}</strong>
+          <div class="past">
+            ${this.renderRelativeDate()}
+          </div>
+          <div class="past">
+            ${this.renderEffort(this.previousLift)}
+          </div>
+        </div>
         <div>${this.renderPreviousLift()}</div>
         ${this.renderImpact()}
       </div>
@@ -72,7 +80,14 @@ export class LiftDetails extends LitElement {
       display: flex;
       justify-content: space-between;
     }
+    .past {
+      font-style: italic;
+    }
 
+    .effort {
+      display: flex;
+      gap: ${dim.spacing.m};
+    }
     .history {
       flex: 1 1;
       overflow-y: auto;
@@ -125,6 +140,13 @@ export class LiftDetails extends LitElement {
     return html`${shorthand}${modifiers?.length ? `#${modifiers.join('')}` : ''}`;
   }
 
+  renderEffort(lift: Lift|undefined) {
+    if (!lift?.sets) {
+      return nothing;
+    }
+    return html`<div>Sets: ${lift.sets.length}</div>`;
+  }
+
   renderRelativeDate() {
     if (!this.lift) {
       return nothing;
@@ -141,11 +163,11 @@ export class LiftDetails extends LitElement {
     if (isSelectedLiftToday) {
       const now = Temporal.Now.plainDateISO();
       timeDiff = previousLiftDate.until(now);
-      return html`<div>${timeDiff.days} days ago</div>`;
+      return html`<time>${timeDiff.days} days ago</time>`;
     } else if (this.lift.date) {
       const selectedLiftDate = Temporal.PlainDate.from(this.lift.date);
       timeDiff = previousLiftDate.until(selectedLiftDate);
-      return html`<div>${timeDiff.days} days before</div>`;
+      return html`<time>${timeDiff.days} days before</time>`;
     }
   }
 
