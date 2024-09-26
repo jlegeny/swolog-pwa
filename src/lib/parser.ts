@@ -189,8 +189,11 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       }
       weights.push(Number(match.groups.weight));
     }
-    const groupRepsStr = str.slice(match[0].length);
-    const repsStr = groupRepsStr.split(/,\s+/);
+    const groupRepsStr = str.slice(match[0].length).trim();
+    if (groupRepsStr === '') {
+      continue group;
+    }
+    const repsStr = groupRepsStr.trim().replace(/,$/, '').split(/,\s+/);
     for (const repStr of repsStr) {
       const match = RE_REP.exec(repStr.trim());
       if (!match) {
