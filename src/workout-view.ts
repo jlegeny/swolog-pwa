@@ -227,14 +227,20 @@ ${historyText + currentText}</textarea
       }
       return html`<button @click=${this.editLog}>Edit</button>`;
     };
+
+    const renderSaveButton = () => {
+      if (!this.editing && !this.workingOut) {
+        return nothing;
+      }
+      return html`
+        <button ?disabled=${!this.modified} @click=${this.saveLog}>Save</button>
+      `;
+    };
     return html`
       <header ?data-expanded=${this.expandedDetails}>
         <div class="left">${renderBackButton()}</div>
         <div class="right">
-          ${renderStartStopButton()} ${renderEditButton()}
-          <button ?disabled=${!this.modified} @click=${this.saveLog}>
-            Save
-          </button>
+          ${renderStartStopButton()} ${renderEditButton()} ${renderSaveButton()}
         </div>
       </header>
     `;
@@ -266,7 +272,9 @@ ${historyText + currentText}</textarea
             @click=${async (e: MouseEvent) => {
               const textArea = e.target as HTMLTextAreaElement;
               const { text } = getLineOnCursor(textArea);
-              if (!text) {
+              if (!text || text.match(/^\d/)) {
+                await this.showSessionHintsFromText(textArea.value);
+                return;
                 return;
               }
               await this.showHintsFromText(text);
@@ -424,6 +432,28 @@ ${historyText + currentText}</textarea
         console.error("Unknown error", e);
       }
     }
+  }
+
+  private async showSessionHintsFromText(text: string) {
+    const lines = text.split("\n");
+    const session: Session = {
+      date: Temporal.Now.plainDateISO().toString(),
+      lifts: [],
+      startLine: 1,
+      endLine: lines.length,
+    }
+    for (const line of lines) {
+      if (line.match(/^\d/)) {
+        continue;
+      }
+      try {
+        const lift = await this.parser.parseLift(line, this.shortcuts);
+        session.lifts.push(lift);
+      } catch (e: unknown) {}
+    }
+    console.log(session);
+    this.selectedLift = undefined;
+    this.selectedSession = session;
   }
 
   private async hideHints() {
