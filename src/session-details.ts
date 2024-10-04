@@ -1,10 +1,10 @@
 import { LitElement, css, nothing, html, PropertyValues } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import { Session } from "./lib/data";
 import { Muscle, exerciseCache } from "./lib/exercises";
 import { inferSessionTitle, sessionFractionalSets } from "./lib/ai";
-import { Effort } from './muscle-chart';
+import { DisplayStyle, Effort } from './muscle-chart';
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -131,13 +131,14 @@ export class SessionDetails extends LitElement {
 
   renderMuscleChart() {
     const effort = new Map<Muscle, Effort>();
-    this.sessionData.mainGroups.forEach((muscle) => {
-      effort.set(muscle, { primary: true });
+    this.sessionData.fractionalSets.forEach((fractionalSets, muscle) => {
+      effort.set(muscle, { fractionalSets });
     });
-    this.sessionData.auxGroups.forEach((muscle) => {
-      effort.set(muscle, { aux: true });
-    });
-    return html`<muscle-chart .effort=${effort}></muscle-chart>`;
+    console.log(effort);
+    return html`<muscle-chart
+      .displayStyle=${DisplayStyle.FRACTIONAL_SETS}
+      .effort=${effort}
+    ></muscle-chart>`;
   }
 
   // Events

@@ -11,6 +11,12 @@ export interface Effort {
   primary?: boolean;
   aux?: boolean;
   intensity?: number;
+  fractionalSets?: number;
+}
+
+export enum DisplayStyle {
+  TARGET,
+  FRACTIONAL_SETS,
 }
 
 /**
@@ -19,6 +25,7 @@ export interface Effort {
 @customElement("muscle-chart")
 export class MuscleChart extends LitElement {
   @property({ attribute: false }) effort = new Map<Muscle, Effort>();
+  @property({ attribute: false }) displayStyle = DisplayStyle.TARGET;
 
   render() {
     return html`<div class="container">
@@ -68,6 +75,9 @@ export class MuscleChart extends LitElement {
       .muscle.aux {
         background-color: ${color.aux};
       }
+      .muscle.exercised {
+        background-color: white;
+      }
       img {
         height: 100%;
         width: 100%;
@@ -79,13 +89,29 @@ export class MuscleChart extends LitElement {
   ];
 
   private renderMuscle(muscle: Muscle, effort: Effort | undefined) {
-    const classes = {
-      muscle: true,
-      [muscle]: true,
-      primary: effort?.primary ?? false,
-      aux: effort?.aux ?? false,
-    };
-    return html`<div class="${classMap(classes)}"></div>`;
+    console.log(muscle, effort);
+    switch (this.displayStyle) {
+      case DisplayStyle.TARGET: {
+        const classes = {
+          muscle: true,
+          [muscle]: true,
+          primary: effort?.primary ?? false,
+          aux: effort?.aux ?? false,
+        };
+        return html`<div class="${classMap(classes)}"></div>`;
+      }
+      case DisplayStyle.FRACTIONAL_SETS: {
+        const classes = {
+          muscle: true,
+          [muscle]: true,
+        };
+        return html`<div class="${classMap(classes)}"></div>
+          <div
+            style="opacity: ${(effort?.fractionalSets ?? 0) / 6}"
+            class="exercised ${classMap(classes)}"
+          ></div>`;
+      }
+    }
   }
 }
 
