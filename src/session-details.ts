@@ -1,5 +1,5 @@
 import { LitElement, css, nothing, html, PropertyValues } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 
 import { Session } from "./lib/data";
 import { Muscle, exerciseCache } from "./lib/exercises";
