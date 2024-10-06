@@ -73,7 +73,8 @@ export class MuscleChart extends LitElement {
         background-color: ${color.primary};
       }
       .muscle.aux {
-        background-color: ${color.aux};
+        background-color: ${color.primary};
+        opacity: 50%;
       }
       .muscle.exercised {
         background-color: white;

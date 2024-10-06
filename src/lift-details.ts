@@ -8,9 +8,10 @@ import { cacheContext } from "./lift-cache-context";
 import { Temporal } from "temporal-polyfill";
 import { Lift } from "./lib/data";
 import { LiftCache } from "./lift-cache-context";
-import { exerciseCache } from './lib/exercises';
+import { Muscle, exerciseCache } from "./lib/exercises";
+import { Effort } from "./muscle-chart";
 
-import './muscle-chart';
+import "./muscle-chart";
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -41,12 +42,8 @@ export class LiftDetails extends LitElement {
         </div>
         <div class="effort">
           <strong>${this.renderEffort(this.lift)}</strong>
-          <div class="past">
-            ${this.renderRelativeDate()}
-          </div>
-          <div class="past">
-            ${this.renderEffort(this.previousLift)}
-          </div>
+          <div class="past">${this.renderRelativeDate()}</div>
+          <div class="past">${this.renderEffort(this.previousLift)}</div>
         </div>
         <div>${this.renderPreviousLift()}</div>
         ${this.renderImpact()}
@@ -125,22 +122,25 @@ export class LiftDetails extends LitElement {
     const exercise = exerciseCache.getExercise(shorthand);
     if (exercise) {
       if (modifiers?.length) {
-        return html`${exercise.name} (${
-          modifiers.map((shortcut) => {
+        return html`${exercise.name}
+        (${modifiers
+          .map((shortcut) => {
             const modifier = exerciseCache.getModifier(shortcut, exercise);
             if (modifier) {
               return modifier.name;
             }
-            return '';
-          }).join(", ")
-        })`;
+            return "";
+          })
+          .join(", ")})`;
       }
       return html`${exercise.name}`;
     }
-    return html`${shorthand}${modifiers?.length ? `#${modifiers.join('')}` : ''}`;
+    return html`${shorthand}${modifiers?.length
+      ? `#${modifiers.join("")}`
+      : ""}`;
   }
 
-  renderEffort(lift: Lift|undefined) {
+  renderEffort(lift: Lift | undefined) {
     if (!lift?.sets) {
       return nothing;
     }
@@ -182,8 +182,22 @@ export class LiftDetails extends LitElement {
     if (!this.expanded) {
       return nothing;
     }
+    if (!this.lift) {
+      return nothing;
+    }
+    const effort = new Map<Muscle, Effort>();
+    const exercise = exerciseCache.getExercise(this.lift.shorthand);
+    if (!exercise) {
+      return nothing;
+    }
+    for (const muscle of exercise.target) {
+      effort.set(muscle, { primary: true });
+    }
+    for (const muscle of exercise.auxiliary ?? []) {
+      effort.set(muscle, { aux: true });
+    }
     return html`<div class="impact">
-      <muscle-chart></muscle-chart>
+      <muscle-chart .effort=${effort}></muscle-chart>
       <div></div>
     </div>`;
   }
@@ -205,19 +219,22 @@ export class LiftDetails extends LitElement {
             ${lifts.reversedMap((lift) => {
               const exercise = exerciseCache.getExercise(lift.shorthand);
               const modifiers = lift.modifiers;
-              let modifiersString = '';
+              let modifiersString = "";
               if (exercise && modifiers?.length) {
-                 modifiersString = `(${
-                  modifiers.map((shortcut) => {
-                    const modifier = exerciseCache.getModifier(shortcut, exercise);
+                modifiersString = `(${modifiers
+                  .map((shortcut) => {
+                    const modifier = exerciseCache.getModifier(
+                      shortcut,
+                      exercise
+                    );
                     if (modifier) {
                       return modifier.name;
                     }
-                    return '';
-                  }).join(", ")
-                })`;
+                    return "";
+                  })
+                  .join(", ")})`;
               }
- 
+
               return html`<li ?data-current=${lift.date == this.lift?.date}>
                 <div>
                   <div>${lift.date} ${modifiersString}</div>
