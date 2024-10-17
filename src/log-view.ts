@@ -27,8 +27,8 @@ import "./session-details";
 /**
  * Main App element.
  */
-@customElement("workout-view")
-export class WorkoutView extends LitElement {
+@customElement("log-view")
+export class LogView extends LitElement {
   @consume({ context: dbContext })
   @state()
   private db?: IDB;
@@ -549,6 +549,6 @@ ${historyText + currentText}</textarea
 
 declare global {
   interface HTMLElementTagNameMap {
-    "workout-view": WorkoutView;
+    "log-view": LogView;
   }
 }

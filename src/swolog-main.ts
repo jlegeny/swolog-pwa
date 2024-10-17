@@ -10,7 +10,7 @@ import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
 
 import "./log-select";
-import "./workout-view";
+import "./log-view";
 import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
 
@@ -33,13 +33,17 @@ export class SwologMain extends LitElement {
   }
 
   render() {
+    const renderContent = () => {
+      if (!this.currentLog) {
+        return html`
+          ${this.renderLogSelect()}
+          <div class="version">${VERSION}</div>
+        `;
+      }
+      return this.renderLog();
+    };
     return html`
-      ${this.currentLog
-        ? this.renderCurrentLog()
-        : html`
-            ${this.renderLogSelect()}
-            <div class="version">${VERSION}</div>
-          `}
+      ${renderContent()}
       <pwa-badge></pwa-badge>
     `;
   }
@@ -69,17 +73,17 @@ export class SwologMain extends LitElement {
     }
   `;
 
-  private renderCurrentLog() {
+  private renderLog() {
     if (!this.currentLog) {
       return nothing;
     }
-    return html`<workout-view
+    return html`<log-view
       .log=${this.currentLog}
       @close=${() => {
         this.currentLog = undefined;
         history.pushState(null, "", "/swolog");
       }}
-    ></workout-view>`;
+    ></log-view>`;
   }
 
   private renderLogSelect() {
