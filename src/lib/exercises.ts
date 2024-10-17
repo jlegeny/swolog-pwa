@@ -34,19 +34,18 @@ export interface Exercise {
   shorthand: string;
 }
 
-const freeWeights: Modifier[] = [
-  { name: "Barbell", shortcut: "B" },
-  { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-];
-
-const bodyWeight: Modifier[] = [{ name: "Body Weight", shortcut: "Bw" }];
+const barbell = { name: "Barbell", shortcut: "B" };
+const dumbbell = { name: "Dumbbell", shortcut: "Db", multiplier: 2 };
+const bodyWeight: Modifier = { name: "Body Weight", shortcut: "Bw" };
 
 const machine: Modifier = { name: "Machine", shortcut: "M" };
 
-const seated: Modifier[] = [{ name: "Seated", shortcut: "S" }];
+const seated: Modifier = { name: "Seated", shortcut: "S" };
 const standing: Modifier = { name: "Standing", shortcut: "T" };
 
-const cable: Modifier[] = [{ name: "Cable", shortcut: "C" }];
+const cable: Modifier = { name: "Cable", shortcut: "C" };
+
+const freeWeights: Modifier[] = [barbell, dumbbell];
 
 export const exercises: Exercise[] = [
   // Chest
@@ -69,28 +68,28 @@ export const exercises: Exercise[] = [
     shorthand: "CGBP",
     target: [Muscle.triceps],
     auxiliary: [Muscle.pectorals],
-    modifiers: [{ name: "Barbell", shortcut: "B" }],
+    modifiers: [barbell],
   },
   {
     name: "Chest Fly",
     shorthand: "Fly",
     target: [Muscle.pectorals],
     auxiliary: [Muscle.anteriorDeltoids],
-    modifiers: [{ name: "Cable", shortcut: "C" }, ...freeWeights],
+    modifiers: [cable, ...freeWeights],
   },
   {
     name: "Push-Up",
     shorthand: "PushUp",
     target: [Muscle.pectorals],
     auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
-    modifiers: bodyWeight,
+    modifiers: [bodyWeight],
   },
   {
     name: "Dip",
     shorthand: "Dip",
     target: [Muscle.triceps],
     auxiliary: [Muscle.pectorals, Muscle.frontDeltoids],
-    modifiers: [{ name: "Body Weight", shortcut: "Bw" }, machine],
+    modifiers: [bodyWeight, machine, seated],
   },
   // Chest
   {
@@ -107,14 +106,14 @@ export const exercises: Exercise[] = [
     shorthand: "PullUp",
     target: [Muscle.lats],
     auxiliary: [Muscle.biceps, Muscle.traps],
-    modifiers: bodyWeight,
+    modifiers: [bodyWeight],
   },
   {
     name: "Chin-Up",
     shorthand: "ChinUp",
     target: [Muscle.biceps, Muscle.lats],
     auxiliary: [Muscle.traps, Muscle.forearms],
-    modifiers: [{ name: "Body Weight", shortcut: "Bw" }, machine],
+    modifiers: [bodyWeight, machine],
   },
   {
     name: "Lat Pulldown",
@@ -135,48 +134,42 @@ export const exercises: Exercise[] = [
     shorthand: "DL",
     target: [Muscle.lowerBack, Muscle.glutes],
     auxiliary: [Muscle.hamstrings, Muscle.traps],
-    modifiers: [{ name: "Barbell", shortcut: "B" }],
+    modifiers: [barbell],
   },
   {
     name: "One-Arm Row",
     shorthand: "OAR",
     target: [Muscle.lats],
     auxiliary: [Muscle.biceps],
-    modifiers: [{ name: "Dumbbell", shortcut: "Db" }],
+    modifiers: [dumbbell],
   },
   {
     name: "Row",
     shorthand: "Row",
     target: [Muscle.lats],
     auxiliary: [Muscle.biceps, Muscle.traps],
-    modifiers: [
-      { name: "Machine", shortcut: "M" },
-      { name: "Cable", shortcut: "C" },
-    ],
+    modifiers: [machine, cable],
   },
   {
     name: "Low Row",
     shorthand: "LowRow",
     target: [Muscle.lats],
     auxiliary: [Muscle.biceps, Muscle.traps],
-    modifiers: [
-      { name: "Cable", shortcut: "C" },
-      { name: "Machine", shortcut: "M" },
-    ],
+    modifiers: [cable, machine],
   },
   {
     name: "T-Bar Row",
     shorthand: "TBRow",
     target: [Muscle.lats],
     auxiliary: [Muscle.traps, Muscle.biceps],
-    modifiers: [{ name: "Barbell", shortcut: "B" }],
+    modifiers: [barbell],
   },
   {
     name: "One-Armed Pulldown",
     shorthand: "OAPD",
     target: [Muscle.lats],
     auxiliary: [Muscle.biceps],
-    modifiers: [{ name: "Cable", shortcut: "C" }],
+    modifiers: [cable],
   },
   // Shoulders
   {
@@ -184,30 +177,26 @@ export const exercises: Exercise[] = [
     shorthand: "SHP",
     target: [Muscle.frontDeltoids],
     auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
-    modifiers: [...freeWeights, machine, ...seated, standing],
+    modifiers: [...freeWeights, machine, seated, standing],
   },
   {
     name: "Lateral Raise",
     shorthand: "LatR",
     target: [Muscle.sideDeltoids],
-    modifiers: [{ name: "Dumbbell", shortcut: "Db", multiplier: 2 }, ...cable],
+    modifiers: [dumbbell, cable],
   },
   {
     name: "Front Raise",
     shorthand: "FR",
     target: [Muscle.frontDeltoids],
-    modifiers: [{ name: "Dumbbell", shortcut: "Db", multiplier: 2 }],
+    modifiers: [dumbbell],
   },
   {
     name: "Reverse Fly",
     shorthand: "RFly",
     target: [Muscle.sideDeltoids],
     auxiliary: [Muscle.traps],
-    modifiers: [
-      machine,
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      ...cable,
-    ],
+    modifiers: [machine, dumbbell, cable],
   },
   {
     name: "Delts Machine",
@@ -226,69 +215,60 @@ export const exercises: Exercise[] = [
     name: "Shrug",
     shorthand: "Shrug",
     target: [Muscle.traps],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      { name: "Barbell", shortcut: "B" },
-    ],
+    modifiers: [dumbbell, barbell],
   },
   {
     name: "Face Pull",
     shorthand: "FP",
     target: [Muscle.sideDeltoids, Muscle.traps],
     auxiliary: [Muscle.frontDeltoids, Muscle.upperBack],
-    modifiers: [{ name: "Cable", shortcut: "C" }],
+    modifiers: [cable],
+  },
+  {
+    name: "T-Bar Row",
+    shorthand: "TBarRow",
+    target: [Muscle.lats],
+    auxiliary: [Muscle.traps, Muscle.biceps, Muscle.lowerBack],
+    modifiers: [machine],
   },
   // Arms
   {
     name: "Bicep Curl",
     shorthand: "Curl",
     target: [Muscle.biceps],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      { name: "Hammer", shortcut: "H" },
-      ...seated,
-    ],
+    modifiers: [dumbbell, standing, barbell, { name: "Hammer", shortcut: "H" }, seated],
   },
   {
     name: "Inclined Bench Curl",
     shorthand: "IBC",
     target: [Muscle.biceps],
     auxiliary: [Muscle.forearms],
-    modifiers: [{ name: "Dumbbell", shortcut: "Db", multiplier: 2 }],
+    modifiers: [dumbbell],
   },
   {
     name: "Tricep Extension",
     shorthand: "TrcpExt",
     target: [Muscle.triceps],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      { name: "Cable", shortcut: "C" },
-    ],
+    modifiers: [cable, dumbbell],
   },
   {
     name: "Skull Crusher",
     shorthand: "SKC",
     target: [Muscle.triceps],
-    modifiers: [
-      { name: "Barbell", shortcut: "B" },
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-    ],
+    modifiers: [barbell, dumbbell],
   },
   {
     name: "Tricep Pushdown",
     shorthand: "TPD",
     target: [Muscle.triceps],
-    modifiers: [{ name: "Cable", shortcut: "C" }],
+    modifiers: [cable],
   },
   // Forearms
   {
     name: "Wrist Curls",
     shorthand: "WrCurl",
     target: [Muscle.forearms],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      { name: "Barbell", shortcut: "B" },
-    ],
+    modifiers: [barbell, dumbbell],
   },
   // Legs
   {
@@ -309,10 +289,7 @@ export const exercises: Exercise[] = [
     name: "Lunge",
     shorthand: "Lunge",
     target: [Muscle.quads, Muscle.glutes],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      ...bodyWeight,
-    ],
+    modifiers: [bodyWeight, dumbbell],
   },
   {
     name: "Leg Press",
@@ -325,7 +302,7 @@ export const exercises: Exercise[] = [
     name: "Calf Raise",
     shorthand: "CalfR",
     target: [Muscle.calves],
-    modifiers: [...bodyWeight, machine],
+    modifiers: [bodyWeight, machine],
   },
   {
     name: "Leg Extension",
@@ -344,48 +321,39 @@ export const exercises: Exercise[] = [
     shorthand: "BSSQ",
     target: [Muscle.quads, Muscle.glutes],
     auxiliary: [Muscle.hamstrings],
-    modifiers: [
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-      { name: "Body Weight", shortcut: "BW" },
-    ],
+    modifiers: [dumbbell, bodyWeight],
   },
   {
     name: "Leg Curl",
     shorthand: "LCurl",
     target: [Muscle.hamstrings],
-    modifiers: [{ name: "Machine", shortcut: "M" }],
+    modifiers: [machine, standing],
   },
   {
     name: "Hip Thrust",
     shorthand: "HT",
     target: [Muscle.glutes],
     auxiliary: [Muscle.hamstrings],
-    modifiers: [
-      { name: "Barbell", shortcut: "B" },
-      { name: "Body Weight", shortcut: "BW" },
-    ],
+    modifiers: [barbell, bodyWeight],
   },
   {
     name: "Adductor",
     shorthand: "ADD",
     target: [Muscle.adductor],
-    modifiers: [{ name: "Machine", shortcut: "M" }],
+    modifiers: [machine],
   },
   {
     name: "Abductor",
     shorthand: "ABD",
     target: [Muscle.glutes],
-    modifiers: [{ name: "Machine", shortcut: "M" }],
+    modifiers: [machine],
   },
   {
     name: "Romanian Deadlift",
     shorthand: "RDL",
     target: [Muscle.hamstrings],
     auxiliary: [Muscle.glutes, Muscle.lowerBack],
-    modifiers: [
-      { name: "Barbell", shortcut: "B" },
-      { name: "Dumbbell", shortcut: "Db", multiplier: 2 },
-    ],
+    modifiers: [barbell, dumbbell],
   },
   // Glutes
   {
@@ -393,11 +361,7 @@ export const exercises: Exercise[] = [
     shorthand: "Kick",
     target: [Muscle.glutes],
     auxiliary: [Muscle.hamstrings],
-    modifiers: [
-      machine,
-      { name: "Body Weight", shortcut: "Bw" },
-      { name: "Cable", shortcut: "C" },
-    ],
+    modifiers: [machine, bodyWeight, cable],
   },
   // Lower Back and Hamstrings
   {
@@ -405,45 +369,39 @@ export const exercises: Exercise[] = [
     shorthand: "GM",
     target: [Muscle.lowerBack],
     auxiliary: [Muscle.hamstrings, Muscle.glutes],
-    modifiers: [
-      { name: "Barbell", shortcut: "B" },
-      { name: "Body Weight", shortcut: "BW" },
-    ],
+    modifiers: [barbell, bodyWeight],
   },
   // Core
   {
     name: "Plank",
     shorthand: "Plank",
     target: [Muscle.abs],
-    modifiers: bodyWeight,
+    modifiers: [bodyWeight],
   },
   {
     name: "Crunch",
     shorthand: "Crunch",
     target: [Muscle.abs],
-    modifiers: [...bodyWeight, ...cable],
+    modifiers: [bodyWeight, cable],
   },
   {
     name: "Russian Twist",
     shorthand: "RT",
     target: [Muscle.abs],
     auxiliary: [Muscle.obliques],
-    modifiers: [{ name: "Dumbbell", shortcut: "Db" }],
+    modifiers: [dumbbell],
   },
   {
     name: "Leg Raise",
     shorthand: "LegR",
     target: [Muscle.abs],
-    modifiers: bodyWeight,
+    modifiers: [bodyWeight],
   },
   {
     name: "Decline Bench Crunch",
     shorthand: "DBCrunch",
     target: [Muscle.abs],
-    modifiers: [
-      { name: "Body Weight", shortcut: "Bw" },
-      { name: "Dumbbell", shortcut: "Db" },
-    ],
+    modifiers: [bodyWeight, dumbbell],
   },
   {
     name: "Abdominals",
@@ -455,7 +413,7 @@ export const exercises: Exercise[] = [
     name: "Obliques",
     shorthand: "Obl",
     target: [Muscle.obliques],
-    modifiers: bodyWeight,
+    modifiers: [bodyWeight],
   },
 ];
 
