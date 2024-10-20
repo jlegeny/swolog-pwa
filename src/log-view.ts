@@ -24,6 +24,12 @@ import "./history-log";
 import "./lift-details";
 import "./session-details";
 
+enum Mode {
+  VIEW,
+  WORKOUT,
+  EDIT,
+}
+
 /**
  * Main App element.
  */
@@ -38,15 +44,14 @@ export class LogView extends LitElement {
   @provide({ context: cacheContext })
   cache: LiftCache = new LiftCache([]);
 
+  @state() mode: Mode = Mode.VIEW;
   @state() selectedLift?: Lift;
   @state() selectedSession?: Session;
   @state() expandedDetails = false;
   @state() highlight: Highlight = {};
 
-  @state() editing: boolean = false;
   @state() modified = false;
   @state() autosaveTimeout?: ReturnType<typeof setTimeout>;
-  @state() workingOut = true;
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
@@ -70,7 +75,7 @@ export class LogView extends LitElement {
               <textarea id="current" disabled>Loading...</textarea>
             `,
             complete: ({ historyText, currentText, annotations }) => {
-              if (this.editing) {
+              if (this.mode === Mode.EDIT) {
                 return html`<textarea
                   autocorrect="off"
                   autocapitalize="off"
@@ -186,11 +191,11 @@ ${historyText + currentText}</textarea
 
   private renderHeader() {
     const renderBackButton = () => {
-      if (this.editing) {
+      if (this.mode === Mode.EDIT) {
         return html`<span
           @click=${() => {
             this.modified = false;
-            this.editing = false;
+            this.mode = Mode.VIEW;
           }}
           >Cancel</span
         >`;
@@ -198,38 +203,38 @@ ${historyText + currentText}</textarea
       return html`<span @click=${this._dispatchClosed}>&lt; Back</span>`;
     };
     const renderStartStopButton = () => {
-      if (this.editing) {
-        return nothing;
-      }
-      if (this.workingOut) {
+      if (this.mode === Mode.WORKOUT) {
         return html`<button
           @click=${() => {
-            this.workingOut = false;
+            this.mode = Mode.VIEW;
             this.saveLog();
           }}
         >
           Stop
         </button>`;
       }
-      return html`<button
-        @click=${() => {
-          this.workingOut = true;
-          this._parseLogTask.run();
-        }}
-      >
-        Start
-      </button>`;
+      if (this.mode === Mode.VIEW) {
+        return html`<button
+          @click=${() => {
+            this.mode = Mode.WORKOUT;
+            this._parseLogTask.run();
+          }}
+        >
+          Start
+        </button>`;
+      }
+      return nothing;
     };
 
     const renderEditButton = () => {
-      if (this.editing || this.workingOut) {
+      if (this.mode !== Mode.VIEW) {
         return nothing;
       }
       return html`<button @click=${this.editLog}>Edit</button>`;
     };
 
     const renderSaveButton = () => {
-      if (!this.editing && !this.workingOut) {
+      if (!(this.mode === Mode.EDIT || this.mode === Mode.WORKOUT)) {
         return nothing;
       }
       return html`
@@ -262,7 +267,7 @@ ${historyText + currentText}</textarea
           await this.showHintsAtLine(line);
         }}
       ></history-log>
-      ${this.workingOut
+      ${this.mode === Mode.WORKOUT
         ? html` <textarea
             class="current"
             autocorrect="off"
@@ -309,7 +314,7 @@ ${historyText + currentText}</textarea
   }
 
   private renderDetails() {
-    if (this.editing) {
+    if (this.mode !== Mode.EDIT) {
       return nothing;
     }
     if (this.selectedLift) {
@@ -359,7 +364,7 @@ ${historyText + currentText}</textarea
 
   private async saveLog(options?: { autosave?: boolean }) {
     clearTimeout(this.autosaveTimeout);
-    if (this.editing) {
+    if (this.mode === Mode.EDIT) {
       this.log.text = this.editorTextArea?.value ?? "";
       this._parseLogTask.run();
     } else {
@@ -373,8 +378,8 @@ ${historyText + currentText}</textarea
     } catch (e: unknown) {
       console.error(e);
     }
-    if (this.editing) {
-      this.editing = false;
+    if (this.mode === Mode.EDIT) {
+      this.mode = Mode.VIEW;
     }
     if (!options?.autosave) {
       this._parseLogTask.run();
@@ -385,7 +390,7 @@ ${historyText + currentText}</textarea
     // We save the log first so the user does not lose the typed in
     // current workout.
     await this.saveLog();
-    this.editing = true;
+    this.mode = Mode.EDIT;
 
     setTimeout(() => {
       if (!this.editorTextArea) {
@@ -441,7 +446,7 @@ ${historyText + currentText}</textarea
       lifts: [],
       startLine: 1,
       endLine: lines.length,
-    }
+    };
     for (const line of lines) {
       if (line.match(/^\d/)) {
         continue;
@@ -502,7 +507,7 @@ ${historyText + currentText}</textarea
       }
 
       // If the workout it not started we don't split the log.
-      if (!this.workingOut) {
+      if (this.mode !== Mode.WORKOUT) {
         return { historyText: log.text, currentText: "", annotations };
       }
 
