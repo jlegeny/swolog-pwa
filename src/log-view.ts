@@ -314,7 +314,7 @@ ${historyText + currentText}</textarea
   }
 
   private renderDetails() {
-    if (this.mode !== Mode.EDIT) {
+    if (this.mode === Mode.EDIT) {
       return nothing;
     }
     if (this.selectedLift) {
