@@ -30,11 +30,18 @@ export interface DropSet {
   reps: number[];
 }
 
+export interface Timed {
+  weight: number;
+  seconds: number;
+}
+
 export interface Set {
   single?: SimpleSet;
   split?: SplitSet;
   drop?: DropSet;
+  timed?: Timed;
 }
+
 export interface Lift {
   shorthand: string;
   work: string;

@@ -3,7 +3,7 @@ import { Log, Set, Session, Lift } from "./data";
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
-const RE_REP = /^(?:(?<single>\d+)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
+const RE_REP = /^(?:(?<single>\d+)|(?:(?<seconds>\d+)s)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
@@ -213,6 +213,21 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
             reps: reps,
           },
         });
+      } else if (match.groups?.time) {
+        const time = Number(match.groups.time);
+        if (weights.length !== 1) {
+          throw new ParseError(
+            ParseErrorType.INVALID_REP,
+            `Expected one weight for a timed rep`
+          );
+        }
+        sets.push({
+          timed: {
+            weight: weights[0],
+            seconds: time,
+          },
+        });
+ 
       } else if (match.groups?.myo) {
         const reps = eval(match.groups.myo);
         if (weights.length !== 1) {
