@@ -12,6 +12,7 @@ export const input = css`
 input {
   display: block;
   font-size: 1rem;
+  color: ${color.text.default};
   border: 1px solid ${color.primary};
   background-color: ${color.bg.input};
   width: 100%;
@@ -29,6 +30,7 @@ export const textarea = css`
 textarea {
   resize: none;
   border: none;
+  color: ${color.text.default};
   font-family: 'JetBrains Mono', monospace;
   background-color: ${color.bg.input};
   border-radius: 0;
