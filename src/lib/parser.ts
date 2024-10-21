@@ -12,6 +12,11 @@ enum ParseErrorType {
   INVALID_REP = "Invalid Rep",
 }
 
+const debugLog = (...args: unknown[]) => {
+  return;
+  console.debug(...args);
+};
+
 export class ParseError extends Error {
   constructor(readonly type: ParseErrorType, msg: string) {
     super(msg);
@@ -120,7 +125,7 @@ export function parseLog(log: Log): {
       const lift = parseLift(line, shortcuts);
       lift.line = lineNumber;
       currentSession?.lifts.push(lift);
-      console.debug(`Parsed lift`, lift);
+      debugLog(`Parsed lift`, lift);
     } catch (e: unknown) {
       if (e instanceof ParseError) {
         console.error(`Parsing error on line ${lineNumber} : ${e.toString()}`);
@@ -137,14 +142,14 @@ export function parseLog(log: Log): {
 
 export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
   let str = line;
-  console.debug(`Parsing lift [${str}]`);
+  debugLog(`Parsing lift [${str}]`);
 
   let isSuperSet = false;
   if (str.match(/^SS /)) {
     isSuperSet = true;
-    console.debug(` .. is a superset. ${isSuperSet}`);
+    debugLog(` .. is a superset. ${isSuperSet}`);
     str = str.slice(3);
-    console.debug(` .. remaining match [${str}]`);
+    debugLog(` .. remaining match [${str}]`);
   }
 
   const matchPrefix = /(?<prefix>\w+) ?/.exec(str);

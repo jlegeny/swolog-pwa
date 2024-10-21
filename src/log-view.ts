@@ -23,11 +23,13 @@ import "./card-container";
 import "./history-log";
 import "./lift-details";
 import "./session-details";
+import "./log-editor";
 
 enum Mode {
   VIEW,
   WORKOUT,
   EDIT,
+  PERIODIZATION,
 }
 
 /**
@@ -55,7 +57,6 @@ export class LogView extends LitElement {
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
-  @query(".editor") editorTextArea?: HTMLTextAreaElement;
 
   private shortcuts = new Map<string, string>();
 
@@ -68,36 +69,7 @@ export class LogView extends LitElement {
     return html`
       ${this.renderHeader()}
       <div class="content">
-        <main ?data-expanded=${this.expandedDetails}>
-          ${this._parseLogTask.render({
-            pending: () => html`
-              <history-log></history-log>
-              <textarea id="current" disabled>Loading...</textarea>
-            `,
-            complete: ({ historyText, currentText, annotations }) => {
-              if (this.mode === Mode.EDIT) {
-                return html`<textarea
-                  autocorrect="off"
-                  autocapitalize="off"
-                  autocomplete="off"
-                  spellcheck="false"
-                  @keyup=${async () => {
-                    this.modified = true;
-                  }}
-                  @paste=${() => {
-                    this.modified = true;
-                  }}
-                  class="editor"
-                >
-${historyText + currentText}</textarea
-                >`;
-              } else {
-                return this.renderLog(historyText, currentText, annotations);
-              }
-            },
-          })}
-        </main>
-        ${this.renderDetails()}
+        ${this.renderContent()} ${this.renderDetails()} ${this.renderOverlay()}
       </div>
     `;
   }
@@ -157,9 +129,6 @@ ${historyText + currentText}</textarea
       flex: 1;
       border-bottom: 1px solid ${color.primary};
     }
-    textarea.editor {
-      height: 300px;
-    }
     textarea.current {
       height: 200px;
     }
@@ -182,6 +151,24 @@ ${historyText + currentText}</textarea
     .details:has(lift-details[expanded]),
     .details:has(session-details[expanded]) {
       border: none;
+      height: 85vh;
+      transition-property: height;
+      transition-timing-function: ease-in-out;
+      transition-duration: 0.3s;
+    }
+    .overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      height: 0;
+      transition-property: height;
+      transition-timing-function: ease-in-out;
+      transition-duration: 0.3.s;
+      overflow: hidden;
+    }
+    .overlay[data-expanded] {
       height: 85vh;
       transition-property: height;
       transition-timing-function: ease-in-out;
@@ -242,13 +229,30 @@ ${historyText + currentText}</textarea
       `;
     };
     return html`
-      <header ?data-expanded=${this.expandedDetails}>
+      <header ?data-expanded=${this.expandedDetails || this.mode === Mode.EDIT}>
         <div class="left">${renderBackButton()}</div>
         <div class="right">
           ${renderStartStopButton()} ${renderEditButton()} ${renderSaveButton()}
         </div>
       </header>
     `;
+  }
+
+  private renderContent() {
+    if (this.mode === Mode.EDIT) {
+      return nothing;
+    }
+    return html`<main ?data-expanded=${this.expandedDetails}>
+      ${this._parseLogTask.render({
+        pending: () => html`
+          <history-log></history-log>
+          <textarea id="current" disabled>Loading...</textarea>
+        `,
+        complete: ({ historyText, currentText, annotations }) => {
+          return this.renderLog(historyText, currentText, annotations);
+        },
+      })}
+    </main>`;
   }
 
   private renderLog(
@@ -362,24 +366,38 @@ ${historyText + currentText}</textarea
     return html`<aside></aside>`;
   }
 
+  private renderOverlay() {
+    if (this.mode === Mode.EDIT) {
+      return html`
+        <card-container class="overlay" data-expanded>
+          <log-editor
+            .log=${this.log}
+            @closeeditor=${() => {
+              this.mode = Mode.VIEW;
+            }}
+            @save=${async (e: { detail: { text: string } }) => {
+              console.log("SAVE");
+              this.log.text = e.detail.text;
+              await this._parseLogTask.run();
+              this.mode = Mode.VIEW;
+            }}
+          ></log-editor>
+        </card-container>
+      `;
+    }
+    return html`<card-container class="overlay"></card-container>`;
+  }
+
   private async saveLog(options?: { autosave?: boolean }) {
     clearTimeout(this.autosaveTimeout);
-    if (this.mode === Mode.EDIT) {
-      this.log.text = this.editorTextArea?.value ?? "";
-      this._parseLogTask.run();
-    } else {
-      const historyText = this.historyLog?.text ?? "";
-      const currentText = this.currentTextArea?.value ?? "";
-      this.log.text = `${historyText}\n${currentText}`;
-    }
+    const historyText = this.historyLog?.text ?? "";
+    const currentText = this.currentTextArea?.value ?? "";
+    this.log.text = `${historyText}${historyText.endsWith("\n") ? '' : "\n"}${currentText}`;
     try {
       await this.db?.insertOrUpdate<Log>("Log", this.log);
       this.modified = false;
     } catch (e: unknown) {
       console.error(e);
-    }
-    if (this.mode === Mode.EDIT) {
-      this.mode = Mode.VIEW;
     }
     if (!options?.autosave) {
       this._parseLogTask.run();
@@ -391,18 +409,6 @@ ${historyText + currentText}</textarea
     // current workout.
     await this.saveLog();
     this.mode = Mode.EDIT;
-
-    setTimeout(() => {
-      if (!this.editorTextArea) {
-        return;
-      }
-      this.editorTextArea.focus();
-      this.editorTextArea.setSelectionRange(
-        this.editorTextArea.value.length,
-        this.editorTextArea.value.length
-      );
-      this.editorTextArea.scrollTop = this.editorTextArea.scrollHeight;
-    }, 300);
   }
 
   private async showHintsAtLine(line: number) {
