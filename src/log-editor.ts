@@ -31,13 +31,14 @@ export class LogEditor extends LitElement {
     textarea {
       height: 100%;
     }
+
     textarea:focus {
       outline: none;
     }
   `;
 
   render() {
-    return html` <header>
+    return html`<header>
         <div class="left">
           <button
             @click=${() => {
@@ -69,6 +70,7 @@ export class LogEditor extends LitElement {
         </div>
       </header>
       <textarea
+        autofocus
         autocorrect="off"
         autocapitalize="off"
         autocomplete="off"

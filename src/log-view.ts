@@ -169,7 +169,9 @@ export class LogView extends LitElement {
       overflow: hidden;
     }
     .overlay[data-expanded] {
-      height: 85vh;
+      bottom: unset;
+      top: -20px;
+      height: 360px;
       transition-property: height;
       transition-timing-function: ease-in-out;
       transition-duration: 0.3s;
@@ -329,13 +331,11 @@ export class LogView extends LitElement {
               .lift=${this.selectedLift}
               ?expanded=${this.expandedDetails}
               @expand=${() => {
-                const meta = document.querySelector("meta[name=theme-color]");
-                meta?.setAttribute("content", color.bg.base.cssText);
+                hideBanner();
                 this.expandedDetails = true;
               }}
               @collapse=${() => {
-                const meta = document.querySelector("meta[name=theme-color]");
-                meta?.setAttribute("content", color.primary.cssText);
+                showBanner();
                 this.expandedDetails = false;
               }}
             ></lift-details>
@@ -350,13 +350,11 @@ export class LogView extends LitElement {
             .session=${this.selectedSession}
             ?expanded=${this.expandedDetails}
             @expand=${() => {
-              const meta = document.querySelector("meta[name=theme-color]");
-              meta?.setAttribute("content", color.bg.base.cssText);
+              hideBanner();
               this.expandedDetails = true;
             }}
             @collapse=${() => {
-              const meta = document.querySelector("meta[name=theme-color]");
-              meta?.setAttribute("content", color.primary.cssText);
+              showBanner();
               this.expandedDetails = false;
             }}
           ></session-details>
@@ -373,12 +371,13 @@ export class LogView extends LitElement {
           <log-editor
             .log=${this.log}
             @closeeditor=${() => {
+              showBanner();
               this.mode = Mode.VIEW;
             }}
             @save=${async (e: { detail: { text: string } }) => {
-              console.log("SAVE");
               this.log.text = e.detail.text;
               await this._parseLogTask.run();
+              showBanner();
               this.mode = Mode.VIEW;
             }}
           ></log-editor>
@@ -392,7 +391,9 @@ export class LogView extends LitElement {
     clearTimeout(this.autosaveTimeout);
     const historyText = this.historyLog?.text ?? "";
     const currentText = this.currentTextArea?.value ?? "";
-    this.log.text = `${historyText}${historyText.endsWith("\n") ? '' : "\n"}${currentText}`;
+    this.log.text = `${historyText}${
+      historyText.endsWith("\n") ? "" : "\n"
+    }${currentText}`;
     try {
       await this.db?.insertOrUpdate<Log>("Log", this.log);
       this.modified = false;
@@ -408,6 +409,8 @@ export class LogView extends LitElement {
     // We save the log first so the user does not lose the typed in
     // current workout.
     await this.saveLog();
+
+    hideBanner();
     this.mode = Mode.EDIT;
   }
 
@@ -556,6 +559,16 @@ export class LogView extends LitElement {
       this.highlight = {};
     }
   }
+}
+
+function hideBanner() {
+  const meta = document.querySelector("meta[name=theme-color]");
+  meta?.setAttribute("content", color.bg.base.cssText);
+}
+
+function showBanner() {
+  const meta = document.querySelector("meta[name=theme-color]");
+  meta?.setAttribute("content", color.primary.cssText);
 }
 
 declare global {
