@@ -1,9 +1,4 @@
-import {
-  LitElement,
-  PropertyValues,
-  css,
-  html,
-} from "lit";
+import { LitElement, PropertyValues, css, html } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 
 import { Log } from "./lib/data";
@@ -70,7 +65,6 @@ export class LogEditor extends LitElement {
         </div>
       </header>
       <textarea
-        autofocus
         autocorrect="off"
         autocapitalize="off"
         autocomplete="off"
@@ -92,7 +86,7 @@ ${this.log.text.replace(/\n\n$/, "\n")}</textarea
       if (!this.textArea) {
         return;
       }
-      this.textArea.focus();
+      // TODO: Find a way to focus the textarea
       this.textArea.setSelectionRange(
         this.textArea.value.length,
         this.textArea.value.length

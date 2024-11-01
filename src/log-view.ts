@@ -376,6 +376,12 @@ export class LogView extends LitElement {
             }}
             @save=${async (e: { detail: { text: string } }) => {
               this.log.text = e.detail.text;
+              try {
+                await this.db?.insertOrUpdate<Log>("Log", this.log);
+                this.modified = false;
+              } catch (e: unknown) {
+                console.error(e);
+              }
               await this._parseLogTask.run();
               showBanner();
               this.mode = Mode.VIEW;
