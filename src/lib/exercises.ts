@@ -70,6 +70,14 @@ export const exercises: Exercise[] = [
     auxiliary: [Muscle.pectorals],
     modifiers: [barbell],
   },
+  // Iso-Lateral Bench Press
+  {
+    name: "Iso-Lateral Bench Press",
+    shorthand: "IsoBBP",
+    target: [Muscle.pectorals],
+    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    modifiers: [machine],
+  },
   {
     name: "Chest Fly",
     shorthand: "Fly",
@@ -158,11 +166,18 @@ export const exercises: Exercise[] = [
     modifiers: [cable, machine],
   },
   {
+    name: "Iso-Lateral High Row",
+    shorthand: "IsoHighRow",
+    target: [Muscle.lats],
+    auxiliary: [Muscle.biceps, Muscle.traps],
+    modifiers: [machine],
+  },
+  {
     name: "T-Bar Row",
     shorthand: "TBRow",
     target: [Muscle.lats],
-    auxiliary: [Muscle.traps, Muscle.biceps],
-    modifiers: [barbell],
+    auxiliary: [Muscle.traps, Muscle.biceps, Muscle.lowerBack],
+    modifiers: [barbell, machine],
   },
   {
     name: "One-Armed Pulldown",
@@ -236,7 +251,13 @@ export const exercises: Exercise[] = [
     name: "Bicep Curl",
     shorthand: "Curl",
     target: [Muscle.biceps],
-    modifiers: [dumbbell, standing, barbell, { name: "Hammer", shortcut: "H" }, seated],
+    modifiers: [
+      dumbbell,
+      standing,
+      barbell,
+      { name: "Hammer", shortcut: "H" },
+      seated,
+    ],
   },
   {
     name: "Inclined Bench Curl",
