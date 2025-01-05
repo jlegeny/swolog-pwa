@@ -18,8 +18,6 @@ export class SessionDetails extends LitElement {
   @property({ type: Boolean }) expanded = false;
 
   sessionData = {
-    mainGroups: new Set<Muscle>(),
-    auxGroups: new Set<Muscle>(),
     fractionalSets: new Map<Muscle, number>(),
   };
 
@@ -88,8 +86,7 @@ export class SessionDetails extends LitElement {
     return html`<div>${session.date}</div>
       <div>
         ${inferSessionTitle(
-          this.sessionData.mainGroups,
-          this.sessionData.auxGroups
+          this.sessionData.fractionalSets
         )}
       </div>`;
   }
@@ -105,26 +102,17 @@ export class SessionDetails extends LitElement {
     if (!this.expanded) {
       return nothing;
     }
-    const mainGroupsArray = Array.from(this.sessionData.mainGroups).sort();
-    const auxGroupsArray = Array.from(this.sessionData.auxGroups).sort();
     return html`
-      <h3>Targeted muscles</h3>
+      <h3>Fractional Sets</h3>
       <ul>
-        ${mainGroupsArray.map(
-          (muscle) =>
-            html`<li>
-              ${muscle} : ${this.sessionData.fractionalSets.get(muscle)}
-            </li>`
-        )}
-      </ul>
-      <h3>Auxiliary muscles</h3>
-      <ul>
-        ${auxGroupsArray.map(
-          (muscle) =>
-            html`<li>
-              ${muscle} : ${this.sessionData.fractionalSets.get(muscle)}
-            </li>`
-        )}
+        ${[...this.sessionData.fractionalSets.entries()]
+          .filter(([, sets]) => {
+            return sets !== 0;
+          })
+          .sort(([, a], [, b]) => {
+            return b - a;
+          })
+          .map(([muscle, sets]) => html`<li>${muscle} : ${sets}</li>`)}
       </ul>
     `;
   }
@@ -157,8 +145,6 @@ export class SessionDetails extends LitElement {
 
   protected override willUpdate(_changedProperties: PropertyValues): void {
     if (_changedProperties.has("session")) {
-      const mainGroups = new Set<Muscle>();
-      const auxGroups = new Set<Muscle>();
       if (!this.session) {
         return;
       }
@@ -167,19 +153,8 @@ export class SessionDetails extends LitElement {
         if (!exercise) {
           continue;
         }
-        for (const muscle of exercise.target) {
-          mainGroups.add(muscle);
-        }
-        for (const muscle of exercise.auxiliary ?? []) {
-          auxGroups.add(muscle);
-        }
-      }
-      for (const muscle of mainGroups) {
-        auxGroups.delete(muscle);
       }
       this.sessionData = {
-        mainGroups,
-        auxGroups,
         fractionalSets: sessionFractionalSets(this.session),
       };
     }

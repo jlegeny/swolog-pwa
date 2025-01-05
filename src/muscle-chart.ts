@@ -90,7 +90,6 @@ export class MuscleChart extends LitElement {
   ];
 
   private renderMuscle(muscle: Muscle, effort: Effort | undefined) {
-    console.log(muscle, effort);
     switch (this.displayStyle) {
       case DisplayStyle.TARGET: {
         const classes = {

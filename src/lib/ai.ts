@@ -22,10 +22,7 @@ export const sessionFractionalSets = (session: Session) => {
   return impact;
 }
 
-export const inferSessionTitle = (
-  mainMuscles: Set<Muscle>,
-  auxMuscles: Set<Muscle>
-) => {
+export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
   let upperPull = 0;
   let upperPullMax = 0;
   let upperPush = 0;
@@ -37,13 +34,7 @@ export const inferSessionTitle = (
   let max = 0;
 
   const muscleImpact = (m: Muscle) => {
-    if (mainMuscles.has(m)) {
-      return 1;
-    }
-    if (auxMuscles.has(m)) {
-      return 0.33;
-    }
-    return 0;
+    return fractionalSets.get(m) ?? 0;
   };
 
   [
