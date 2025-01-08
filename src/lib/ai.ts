@@ -22,6 +22,14 @@ export const sessionFractionalSets = (session: Session) => {
   return impact;
 }
 
+export const sessionTotalSets = (session: Session) => {
+  let totalSets = 0;
+  for (const lift of session.lifts) {
+    totalSets += lift.sets?.length ?? 0;
+  }
+  return totalSets;
+}
+
 export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
   let upperPull = 0;
   let upperPullMax = 0;

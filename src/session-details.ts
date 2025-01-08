@@ -3,7 +3,11 @@ import { customElement, property } from "lit/decorators.js";
 
 import { Session } from "./lib/data";
 import { Muscle, exerciseCache } from "./lib/exercises";
-import { inferSessionTitle, sessionFractionalSets } from "./lib/ai";
+import {
+  inferSessionTitle,
+  sessionFractionalSets,
+  sessionTotalSets,
+} from "./lib/ai";
 import { DisplayStyle, Effort } from './muscle-chart';
 
 import * as color from "./css/colors";
@@ -19,6 +23,7 @@ export class SessionDetails extends LitElement {
 
   sessionData = {
     fractionalSets: new Map<Muscle, number>(),
+    totalSets: 0,
   };
 
   override render() {
@@ -32,6 +37,10 @@ export class SessionDetails extends LitElement {
           ><span @click=${this._dispatchExpandCollapse}
             >${this.expanded ? "Less" : "More"}</span
           >
+        </div>
+        <div>
+          ${this.sessionData.totalSets}
+          set${this.sessionData.totalSets === 1 ? "" : "s"}
         </div>
         <div>${this.renderDuration(this.session)}</div>
         ${this.renderMuscleChart()}
@@ -84,18 +93,14 @@ export class SessionDetails extends LitElement {
 
   renderTitle(session: Session) {
     return html`<div>${session.date}</div>
-      <div>
-        ${inferSessionTitle(
-          this.sessionData.fractionalSets
-        )}
-      </div>`;
+      <div>${inferSessionTitle(this.sessionData.fractionalSets)}</div>`;
   }
 
   renderDuration(session: Session) {
     if (!session.duration) {
       return nothing;
     }
-    return html`${session.duration}`;
+    return html`${session.duration}'`;
   }
 
   renderMuscleGroups() {
@@ -122,7 +127,6 @@ export class SessionDetails extends LitElement {
     this.sessionData.fractionalSets.forEach((fractionalSets, muscle) => {
       effort.set(muscle, { fractionalSets });
     });
-    console.log(effort);
     return html`<muscle-chart
       .displayStyle=${DisplayStyle.FRACTIONAL_SETS}
       .effort=${effort}
@@ -156,6 +160,7 @@ export class SessionDetails extends LitElement {
       }
       this.sessionData = {
         fractionalSets: sessionFractionalSets(this.session),
+        totalSets: sessionTotalSets(this.session),
       };
     }
   }
