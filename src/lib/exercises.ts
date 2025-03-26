@@ -5,7 +5,7 @@ export enum Muscle {
   biceps = "biceps",
   frontDeltoids = "frontDeltoids",
   sideDeltoids = "sideDeltoids",
-  anteriorDeltoids = "anteriorDeltoids",
+  backDeltoids = "backDeltoids",
   lats = "lats",
   traps = "traps",
   quads = "quads",
@@ -53,14 +53,14 @@ export const exercises: Exercise[] = [
     name: "Bench Press",
     shorthand: "BP",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    auxiliary: [Muscle.frontDeltoids, Muscle.triceps],
     modifiers: freeWeights,
   },
   {
     name: "Incline Bench Press",
     shorthand: "IBP",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    auxiliary: [Muscle.frontDeltoids, Muscle.triceps],
     modifiers: freeWeights,
   },
   {
@@ -75,21 +75,21 @@ export const exercises: Exercise[] = [
     name: "Iso-Lateral Bench Press",
     shorthand: "IsoBBP",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    auxiliary: [Muscle.frontDeltoids, Muscle.triceps],
     modifiers: [machine],
   },
   {
     name: "Chest Fly",
     shorthand: "Fly",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids],
-    modifiers: [cable, ...freeWeights],
+    auxiliary: [Muscle.frontDeltoids],
+    modifiers: [cable, ...freeWeights, seated, machine],
   },
   {
     name: "Push-Up",
     shorthand: "PushUp",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    auxiliary: [Muscle.frontDeltoids, Muscle.triceps],
     modifiers: [bodyWeight],
   },
   {
@@ -104,10 +104,16 @@ export const exercises: Exercise[] = [
     name: "Pec Deck",
     shorthand: "Pect",
     target: [Muscle.pectorals],
-    auxiliary: [Muscle.anteriorDeltoids],
+    auxiliary: [Muscle.frontDeltoids],
     modifiers: [machine],
   },
-
+  {
+    name: "Chest Press",
+    shorthand: "ChestP",
+    target: [Muscle.pectorals],
+    auxiliary: [Muscle.frontDeltoids, Muscle.triceps],
+    modifiers: [machine, seated],
+  },
   // Back
   {
     name: "Pull-Up",
@@ -191,14 +197,14 @@ export const exercises: Exercise[] = [
     name: "Shoulder Press",
     shorthand: "SHP",
     target: [Muscle.frontDeltoids],
-    auxiliary: [Muscle.anteriorDeltoids, Muscle.triceps],
+    auxiliary: [Muscle.triceps, Muscle.sideDeltoids],
     modifiers: [...freeWeights, machine, seated, standing],
   },
   {
     name: "Lateral Raise",
     shorthand: "LatR",
     target: [Muscle.sideDeltoids],
-    modifiers: [dumbbell, cable],
+    modifiers: [dumbbell, cable, seated, machine],
   },
   {
     name: "Front Raise",
@@ -209,9 +215,9 @@ export const exercises: Exercise[] = [
   {
     name: "Reverse Fly",
     shorthand: "RFly",
-    target: [Muscle.sideDeltoids],
+    target: [Muscle.backDeltoids],
     auxiliary: [Muscle.traps],
-    modifiers: [machine, dumbbell, cable],
+    modifiers: [machine, dumbbell, cable, seated],
   },
   {
     name: "Delts Machine",
@@ -235,16 +241,9 @@ export const exercises: Exercise[] = [
   {
     name: "Face Pull",
     shorthand: "FP",
-    target: [Muscle.sideDeltoids, Muscle.traps],
-    auxiliary: [Muscle.frontDeltoids, Muscle.upperBack],
+    target: [Muscle.backDeltoids, Muscle.traps],
+    auxiliary: [Muscle.upperBack],
     modifiers: [cable],
-  },
-  {
-    name: "T-Bar Row",
-    shorthand: "TBarRow",
-    target: [Muscle.lats],
-    auxiliary: [Muscle.traps, Muscle.biceps, Muscle.lowerBack],
-    modifiers: [machine],
   },
   // Arms
   {
@@ -291,6 +290,12 @@ export const exercises: Exercise[] = [
     target: [Muscle.forearms],
     modifiers: [barbell, dumbbell],
   },
+  {
+    name: "Underhand Wrist Curl",
+    shorthand: "UWrCurl",
+    target: [Muscle.forearms],
+    modifiers: [barbell, dumbbell, seated],
+  },
   // Legs
   {
     name: "Squat",
@@ -329,13 +334,13 @@ export const exercises: Exercise[] = [
     name: "Leg Extension",
     shorthand: "LExt",
     target: [Muscle.quads],
-    modifiers: [machine],
+    modifiers: [machine, seated],
   },
   {
     name: "Calf Press",
     shorthand: "Calf",
     target: [Muscle.calves],
-    modifiers: [machine],
+    modifiers: [machine, seated],
   },
   {
     name: "Bulgarian Split Squat",
@@ -356,6 +361,19 @@ export const exercises: Exercise[] = [
     target: [Muscle.glutes],
     auxiliary: [Muscle.hamstrings],
     modifiers: [barbell, bodyWeight],
+  },
+  {
+    name: "Lateral Leg Raise",
+    shorthand: "LLR",
+    target: [Muscle.glutes],
+    modifiers: [bodyWeight, standing],
+  },
+  {
+    name: "Hanging Leg Rotation",
+    shorthand: "LegRot",
+    target: [Muscle.obliques],
+    auxiliary: [Muscle.abs],
+    modifiers: [bodyWeight],
   },
   {
     name: "Adductor",
@@ -397,6 +415,7 @@ export const exercises: Exercise[] = [
     name: "Plank",
     shorthand: "Plank",
     target: [Muscle.abs],
+    auxiliary: [Muscle.obliques, Muscle.lowerBack],
     modifiers: [bodyWeight],
   },
   {
@@ -434,7 +453,8 @@ export const exercises: Exercise[] = [
     name: "Obliques",
     shorthand: "Obl",
     target: [Muscle.obliques],
-    modifiers: [bodyWeight],
+    auxiliary: [Muscle.abs],
+    modifiers: [bodyWeight, seated, machine],
   },
 ];
 
