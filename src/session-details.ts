@@ -8,7 +8,7 @@ import {
   sessionFractionalSets,
   sessionTotalSets,
 } from "./lib/ai";
-import { DisplayStyle, Effort } from './muscle-chart';
+import { DisplayStyle, Effort } from "./muscle-chart";
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -32,18 +32,22 @@ export class SessionDetails extends LitElement {
     }
     return html`
       <div ?data-expanded=${this.expanded} class="summary">
-        <div class="title">
-          <span>${this.renderTitle(this.session)}</span
-          ><span @click=${this._dispatchExpandCollapse}
+        <div>
+          <div class="title">
+            <span>${this.renderTitle(this.session)}</span>
+          </div>
+          <div>
+            ${this.sessionData.totalSets}
+            set${this.sessionData.totalSets === 1 ? "" : "s"}
+          </div>
+          <div>${this.renderDuration(this.session)}</div>
+        </div>
+        ${this.renderMuscleChart()}
+        <div class="trailing">
+          <span @click=${this._dispatchExpandCollapse}
             >${this.expanded ? "Less" : "More"}</span
           >
         </div>
-        <div>
-          ${this.sessionData.totalSets}
-          set${this.sessionData.totalSets === 1 ? "" : "s"}
-        </div>
-        <div>${this.renderDuration(this.session)}</div>
-        ${this.renderMuscleChart()}
       </div>
       <div class="details">${this.renderMuscleGroups()}</div>
     `;
@@ -61,9 +65,18 @@ export class SessionDetails extends LitElement {
 
     .summary {
       flex: 0 0;
+
+      display: flex;
+      flex-direction: row;
       padding: ${dim.spacing.xs};
       background-color: ${color.bg.card.default};
       transition: background-color 0.2s ease-in-out;
+      > div {
+        flex: 1;
+      }
+      .trailing {
+        text-align: end;
+      }
     }
     .summary[data-expanded] {
       box-shadow: 0 4px 20px -5px ${color.shadow};
@@ -72,7 +85,7 @@ export class SessionDetails extends LitElement {
     }
     muscle-chart {
       margin: 0 auto;
-      transform: scale(0.75) translate(0, -4em);
+      transform: scale(0.75) translate(0, 0);
       transform-origin: top;
       transition: transform 0.2s ease-in-out;
     }
