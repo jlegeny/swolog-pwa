@@ -32,14 +32,9 @@ export const sessionTotalSets = (session: Session) => {
 
 export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
   let upperPull = 0;
-  let upperPullMax = 0;
   let upperPush = 0;
-  let upperPushMax = 0;
   let legs = 0;
-  let legsMax = 0;
   let abs = 0;
-  // let absMax = 0;
-  let max = 0;
 
   const muscleImpact = (m: Muscle) => {
     return fractionalSets.get(m) ?? 0;
@@ -54,59 +49,39 @@ export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
     Muscle.sideDeltoids,
   ].forEach((m) => {
     upperPull += muscleImpact(m);
-    upperPullMax += 1;
-    max += muscleImpact(m);
   });
 
   [Muscle.pectorals, Muscle.triceps, Muscle.frontDeltoids].forEach((m) => {
     upperPush += muscleImpact(m);
-    upperPushMax += 1;
-    max += muscleImpact(m);
   });
 
   [Muscle.quads, Muscle.calves, Muscle.glutes, Muscle.hamstrings].forEach(
     (m) => {
       legs += muscleImpact(m);
-      legsMax += 1;
-      max += muscleImpact(m);
     }
   );
 
   [Muscle.abs, Muscle.obliques].forEach((m) => {
     abs += muscleImpact(m);
-    // max += muscleImpact(m);
   });
 
-  const upperPullRatio = upperPull && upperPull / upperPullMax;
-  const upperPushRatio = upperPush && upperPush / upperPushMax;
-  const legsRatio = legs && legs / legsMax;
-  const absRatio = abs && abs / max;
-
-  console.log(
-    "Pull",
-    upperPullRatio,
-    "Push",
-    upperPushRatio,
-    "Legs",
-    legsRatio
-  );
-  if (upperPullRatio > upperPushRatio + legsRatio) {
+  if (upperPull > upperPush + legs) {
     return "Pull";
   }
 
-  if (upperPushRatio > upperPullRatio + legsRatio) {
+  if (upperPush > upperPull + legs) {
     return "Push";
   }
 
-  if (legsRatio > upperPullRatio + upperPushRatio) {
+  if (legs > upperPull + upperPush) {
     return "Legs";
   }
 
-  if (upperPullRatio + upperPushRatio > 0.6) {
+  if (upperPull + upperPush > 0.6) {
     return "Upper Body";
   }
 
-  if (absRatio > 0.5) {
+  if (abs > 6) {
     return "Abdominals";
   }
 
