@@ -1,13 +1,13 @@
 import { consume } from "@lit/context";
 import { LitElement, PropertyValues, css, html } from "lit";
-import { customElement, property, state, query } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { cacheContext, LiftCache } from "./lift-cache-context";
 
 import * as dim from "./css/dimensions";
 import * as mixin from "./css/mixins";
 
 import { Temporal } from "temporal-polyfill";
-import { exerciseCache, Muscle } from "./lib/exercises";
+import { Muscle } from "./lib/exercises";
 import { sessionFractionalSets } from "./lib/ai";
 import { DisplayStyle, Effort } from "./muscle-chart";
 
