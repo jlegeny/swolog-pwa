@@ -24,6 +24,7 @@ import "./history-log";
 import "./lift-details";
 import "./session-details";
 import "./log-editor";
+import "./periodization-chart";
 
 enum Mode {
   VIEW,
@@ -175,22 +176,29 @@ export class LogView extends LitElement {
       transition-property: height;
       transition-timing-function: ease-in-out;
       transition-duration: 0.3s;
+      &.full-height {
+        height: 100%;
+      }
     }
   `;
 
   private renderHeader() {
     const renderBackButton = () => {
       if (this.mode === Mode.EDIT) {
-        return html`<span
-          @click=${() => {
-            this.modified = false;
-            this.mode = Mode.VIEW;
-          }}
-          >Cancel</span
-        >`;
+        return nothing;
       }
-      return html`<span @click=${this._dispatchClosed}>&lt; Back</span>`;
+      if (this.mode === Mode.PERIODIZATION) {
+        return nothing;
+      }
+       return html`<span @click=${this._dispatchClosed}>&lt; Back</span>`;
     };
+    const renderPeriodizationButton = () => {
+      if (this.mode !== Mode.VIEW) {
+        return nothing;
+      }
+      return html`<button @click=${this.openPeriodizationView}>Stats</button>`;
+    };
+
     const renderStartStopButton = () => {
       if (this.mode === Mode.WORKOUT) {
         return html`<button
@@ -231,17 +239,22 @@ export class LogView extends LitElement {
       `;
     };
     return html`
-      <header ?data-expanded=${this.expandedDetails || this.mode === Mode.EDIT}>
+      <header
+        ?data-expanded=${this.expandedDetails ||
+        this.mode === Mode.EDIT ||
+        this.mode === Mode.PERIODIZATION}
+      >
         <div class="left">${renderBackButton()}</div>
         <div class="right">
-          ${renderStartStopButton()} ${renderEditButton()} ${renderSaveButton()}
+          ${renderStartStopButton()} ${renderPeriodizationButton()}
+          ${renderEditButton()} ${renderSaveButton()}
         </div>
       </header>
     `;
   }
 
   private renderContent() {
-    if (this.mode === Mode.EDIT) {
+    if (this.mode === Mode.EDIT || this.mode === Mode.PERIODIZATION) {
       return nothing;
     }
     return html`<main ?data-expanded=${this.expandedDetails}>
@@ -320,7 +333,7 @@ export class LogView extends LitElement {
   }
 
   private renderDetails() {
-    if (this.mode === Mode.EDIT) {
+    if (this.mode === Mode.EDIT || this.mode === Mode.PERIODIZATION) {
       return nothing;
     }
     if (this.selectedLift) {
@@ -390,6 +403,18 @@ export class LogView extends LitElement {
         </card-container>
       `;
     }
+    if (this.mode === Mode.PERIODIZATION) {
+      return html`
+        <card-container class="overlay full-height" data-expanded>
+          <periodization-chart
+            @closed=${() => {
+              showBanner();
+              this.mode = Mode.VIEW;
+            }}
+          ></periodization-chart>
+        </card-container>
+      `;
+    }
     return html`<card-container class="overlay"></card-container>`;
   }
 
@@ -418,6 +443,15 @@ export class LogView extends LitElement {
 
     hideBanner();
     this.mode = Mode.EDIT;
+  }
+
+  private async openPeriodizationView() {
+    if (this.modified) {
+      await this.saveLog()
+    }
+
+    hideBanner();
+    this.mode = Mode.PERIODIZATION;
   }
 
   private async showHintsAtLine(line: number) {
@@ -493,7 +527,6 @@ export class LogView extends LitElement {
     task: async ([log], {}) => {
       const { sessions, errors, metadata, shortcuts } =
         await this.parser.parseLog(log);
-      console.debug(sessions, errors, metadata);
       this.cache.init(sessions);
       this.shortcuts = shortcuts;
 

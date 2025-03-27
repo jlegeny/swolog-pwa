@@ -1,4 +1,4 @@
-import { LitElement, css, html, unsafeCSS } from "lit";
+import { LitElement, css, html, nothing, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { Muscle } from "./lib/exercises";
@@ -12,11 +12,13 @@ export interface Effort {
   aux?: boolean;
   intensity?: number;
   fractionalSets?: number;
+  target?: number;
 }
 
 export enum DisplayStyle {
   TARGET,
   FRACTIONAL_SETS,
+  COMPLETION,
 }
 
 /**
@@ -79,6 +81,13 @@ export class MuscleChart extends LitElement {
       .muscle.exercised {
         background-color: white;
       }
+      .muscle.insufficient {
+        background-color:  ${color.primary};
+        opacity: 50%;
+      }
+      .muscle.partial {
+        background-color: ${color.primary}
+      }
       img {
         height: 100%;
         width: 100%;
@@ -109,6 +118,23 @@ export class MuscleChart extends LitElement {
           <div
             style="opacity: ${(effort?.fractionalSets ?? 0) / 6}"
             class="exercised ${classMap(classes)}"
+          ></div>`;
+      }
+      case DisplayStyle.COMPLETION: {
+        if (!effort?.target) {
+          return nothing;
+        }
+        const setsDone = effort.fractionalSets ?? 0;
+        const classes = {
+          muscle: true,
+          [muscle]: true,
+          exercised: setsDone >= effort.target,
+          partial: setsDone >= 0.6 * effort.target && setsDone < effort.target,
+          insufficient: setsDone > 0 && setsDone < 0.6 * effort.target,
+        };
+        return html`<div class="${classMap(classes)}"></div>
+          <div
+            class="${classMap(classes)}"
           ></div>`;
       }
     }
