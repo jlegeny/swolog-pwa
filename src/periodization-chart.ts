@@ -19,11 +19,10 @@ const WEEKLY_TARGET = new Map<Muscle, number>([
   [Muscle.quads, 16],
   [Muscle.hamstrings, 16],
   [Muscle.glutes, 16],
-  [Muscle.upperBack, 16],
 
   [Muscle.frontDeltoids, 14],
   [Muscle.sideDeltoids, 14],
-  [Muscle.backDeltoids, 14],
+  [Muscle.rearDeltoids, 14],
   [Muscle.traps, 14],
   [Muscle.triceps, 14],
   [Muscle.biceps, 14],
@@ -64,7 +63,7 @@ export class PeriodizationChart extends LitElement {
         width: 100%;
       }
       ul {
-        width: 100%;
+        align-self: flex-start;
       }
     }
   `;

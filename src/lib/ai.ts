@@ -44,9 +44,9 @@ export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
     Muscle.biceps,
     Muscle.lats,
     Muscle.lowerBack,
-    Muscle.upperBack,
     Muscle.traps,
     Muscle.sideDeltoids,
+    Muscle.rearDeltoids,
   ].forEach((m) => {
     upperPull += muscleImpact(m);
   });
