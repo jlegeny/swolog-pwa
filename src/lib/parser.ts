@@ -53,10 +53,6 @@ export function parseLog(log: Log): {
 
   lines: for (const line of lines) {
     lineNumber++;
-    if (sessions.length) {
-      sessions[sessions.length - 1].endLine += 1;
-    }
-
     // Filter out empty lines.
     if (!line.length) {
       continue lines;
@@ -82,6 +78,10 @@ export function parseLog(log: Log): {
     // Match dates.
     const matchDate = RE_DATE.exec(line);
     if (matchDate) {
+      if (sessions.length) {
+        sessions[sessions.length - 1].endLine = lineNumber - 1;
+      }
+
       metadata.lastSessionStartLine = lineNumber - 1;
       const date = line.trim();
       if (!date) {
@@ -94,10 +94,6 @@ export function parseLog(log: Log): {
         startLine: lineNumber,
         endLine: lineNumber,
       };
-      if (sessions.length) {
-        // Avoid overlapping session lengths
-        sessions[sessions.length - 1].endLine -= 1;
-      }
       sessions.push(currentSession);
       currentDate = date;
       continue lines;
@@ -134,6 +130,9 @@ export function parseLog(log: Log): {
         console.error(e);
       }
     }
+  }
+  if (sessions.length) {
+    sessions[sessions.length - 1].endLine = lineNumber;
   }
   console.groupEnd();
 
@@ -234,7 +233,11 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
         });
  
       } else if (match.groups?.myo) {
-        const reps = eval(match.groups.myo);
+        const individualReps = match.groups.myo
+          .split("+")
+          .map(Number)
+          .filter((x) => !isNaN(x));
+        const reps = individualReps.reduce((acc, cur) => acc + cur, 0);
         if (weights.length !== 1) {
           throw new ParseError(
             ParseErrorType.INVALID_REP,
