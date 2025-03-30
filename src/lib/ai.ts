@@ -1,6 +1,5 @@
-import { Muscle } from "./exercises";
+import { Muscle, exerciseCache } from "./exercises";
 import { Session } from "./data";
-import { exerciseCache  } from "./exercises";
 import { MapWithDefault } from "./utils";
 
 export const sessionFractionalSets = (session: Session) => {
@@ -20,7 +19,7 @@ export const sessionFractionalSets = (session: Session) => {
     }
   }
   return impact;
-}
+};
 
 export const sessionTotalSets = (session: Session) => {
   let totalSets = 0;
@@ -28,7 +27,7 @@ export const sessionTotalSets = (session: Session) => {
     totalSets += lift.sets?.length ?? 0;
   }
   return totalSets;
-}
+};
 
 export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
   let upperPull = 0;
@@ -87,3 +86,4 @@ export const inferSessionTitle = (fractionalSets: Map<Muscle, number>) => {
 
   return "Whole Body";
 };
+
