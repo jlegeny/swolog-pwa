@@ -7,7 +7,7 @@ import * as dim from "./css/dimensions";
 import * as mixin from "./css/mixins";
 
 import { Temporal } from "temporal-polyfill";
-import { Muscle } from "./lib/exercises";
+import { Exercise, exerciseCache, Muscle } from "./lib/exercises";
 import { sessionFractionalSets } from "./lib/ai";
 import { DisplayStyle, Effort } from "./muscle-chart";
 
@@ -58,7 +58,7 @@ export class PeriodizationChart extends LitElement {
       overflow-y: scroll;
       padding: ${dim.spacing.s};
 
-      h1 {
+      h1, h2 {
         font-size: ${dim.text.default};
         width: 100%;
       }
@@ -93,12 +93,17 @@ export class PeriodizationChart extends LitElement {
       <h1>Muscle groups for last ${PERIOD_LENGTH} days.</h1>
       ${this.renderMuscleChart()}
       <ul>
-        ${Array.from(this.lastPeriod.effort).map(([muscle, effort]) => {
-          return html`<li>
-            ${muscle} - ${effort.fractionalSets} / ${effort.target}
-          </li>`;
-        })}
+        ${Array.from(this.lastPeriod.effort)
+          .sort((a, b) => {
+            return (a[1].fractionalSets ?? 0) - (b[1].fractionalSets ?? 0);
+          })
+          .map(([muscle, effort]) => {
+            return html`<li>
+              ${muscle} - ${effort.fractionalSets} / ${effort.target}
+            </li>`;
+          })}
       </ul>
+      ${this.renderAdvice()}
     `;
   }
 
@@ -107,6 +112,48 @@ export class PeriodizationChart extends LitElement {
       .displayStyle=${DisplayStyle.COMPLETION}
       .effort=${this.lastPeriod.effort}
     ></muscle-chart>`;
+  }
+
+  renderAdvice() {
+    const muscles = Array.from(this.lastPeriod.effort)
+      .sort((a, b) => {
+        return (a[1].fractionalSets ?? 0) - (b[1].fractionalSets ?? 0);
+      })
+      .map(([muscle, _effort]) => muscle);
+    const exerciseScore = new Map<Exercise, number>();
+    for (const muscle of muscles) {
+      const fractionalSets = this.lastPeriod.effort.get(muscle)?.fractionalSets ?? 0;
+      const target = this.lastPeriod.effort.get(muscle)?.target ?? 1;
+      const coefficient = (target - fractionalSets) / target;
+      for (const exercise of exerciseCache.exercisesForMuscle(muscle)) {
+        console.log(`${exercise.shorthand} for ${muscle} coeff ${coefficient}`);
+        exerciseScore.set(exercise, (exerciseScore.get(exercise) ?? 0) + 1 * coefficient);
+      }
+      for (const exercise of exerciseCache.auxiliaryExercisesForMuscle(
+        muscle
+      )) {
+        console.log(`aux ${exercise.shorthand} for ${muscle} coeff ${coefficient}`);
+        exerciseScore.set(exercise, (exerciseScore.get(exercise) ?? 0) + 0.5 * coefficient);
+      }
+    }
+    console.log(
+      Array.from(exerciseScore)
+        .sort((a, b) => {
+          return b[1] - a[1];
+        })
+        .map(([exercise, score]) => `${exercise.shorthand} -> ${score}`)
+    );
+    return html`
+      <h2>Recommended exercises</h2>
+      <ul>
+        ${Array.from(exerciseScore)
+          .sort((a, b) => {
+            return b[1] - a[1];
+          })
+          .slice(0, 4)
+          .map(([exercise, _score]) => html`<li>${exercise.name}</li>`)}
+      </ul>
+    `;
   }
 
   protected willUpdate(_changedProperties: PropertyValues): void {

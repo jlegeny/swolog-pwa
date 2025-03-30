@@ -458,10 +458,24 @@ export const exercises: Exercise[] = [
 
 class ExerciseCache {
   private shorthandToExercise = new Map<string, Exercise>();
+  private primaryMuscleToExercise = new Map<Muscle, Set<Exercise>>();
+  private auxiliaryMuscleToExercise = new Map<Muscle, Set<Exercise>>();
 
   constructor() {
     for (const exercise of exercises) {
       this.shorthandToExercise.set(exercise.shorthand, exercise);
+      for (const muscle of exercise.target) {
+        const exercises =
+          this.primaryMuscleToExercise.get(muscle) ?? new Set<Exercise>();
+        exercises.add(exercise);
+        this.primaryMuscleToExercise.set(muscle, exercises);
+      }
+      for (const muscle of exercise.auxiliary ?? []) {
+        const exercises =
+          this.auxiliaryMuscleToExercise.get(muscle) ?? new Set<Exercise>();
+        exercises.add(exercise);
+        this.auxiliaryMuscleToExercise.set(muscle, exercises);
+      }
     }
   }
 
@@ -479,6 +493,13 @@ class ExerciseCache {
       }
     }
     return undefined;
+  };
+
+  exercisesForMuscle = (muscle: Muscle): Exercise[] => {
+    return Array.from(this.primaryMuscleToExercise.get(muscle) ?? []);
+  };
+  auxiliaryExercisesForMuscle = (muscle: Muscle): Exercise[] => {
+    return Array.from(this.auxiliaryMuscleToExercise.get(muscle) ?? []);
   };
 }
 
