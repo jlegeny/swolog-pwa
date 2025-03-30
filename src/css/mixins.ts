@@ -72,6 +72,7 @@ export const header = css`
     justify-content: space-between;
     padding-left: ${dim.spacing.s};
     padding-right: ${dim.spacing.s};
+    flex-shrink: 0;
   }
   header div {
     display: flex;
