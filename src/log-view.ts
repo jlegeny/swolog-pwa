@@ -525,10 +525,9 @@ export class LogView extends LitElement {
 
   private _parseLogTask = new Task(this, {
     task: async ([log], {}) => {
-      const { sessions, errors, metadata, shortcuts } =
+      const { sessions, errors, metadata } =
         await this.parser.parseLog(log);
       this.cache.init(sessions);
-      this.shortcuts = shortcuts;
 
       const annotations = new Map<number, Annotation[]>();
       for (const [line, text] of errors) {
