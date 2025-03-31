@@ -1,6 +1,7 @@
 import { Log, Set, Session, Lift } from "./data";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
 const RE_REP = /^(?:(?<single>\d+)|(?:(?<seconds>\d+)s)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
@@ -34,10 +35,12 @@ export function parseLog(log: Log): {
   sessions: Session[];
   errors: Map<number, string>;
   metadata: ParsingMetadata;
+  shortcuts: Map<string, string>;
 } {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
+  const shortcuts = new Map<string, string>();
 
   console.group(`Parsing log ${log.id}`);
 
@@ -57,6 +60,18 @@ export function parseLog(log: Log): {
 
     // Filter out comments.
     if (line.match(/^#/)) {
+      continue lines;
+    }
+
+    // Match shortcuts.
+    const matchShortcut = RE_SHORTCUT.exec(line);
+    if (matchShortcut) {
+      if (matchShortcut.groups?.shortcut && matchShortcut.groups?.expansion) {
+        shortcuts.set(
+          matchShortcut.groups.shortcut,
+          matchShortcut.groups?.expansion
+        );
+      }
       continue lines;
     }
 
@@ -103,7 +118,7 @@ export function parseLog(log: Log): {
     }
 
     try {
-      const lift = parseLift(line, log.config.shortcuts);
+      const lift = parseLift(line, shortcuts);
       lift.line = lineNumber;
       currentSession?.lifts.push(lift);
       debugLog(`Parsed lift`, lift);
@@ -121,7 +136,7 @@ export function parseLog(log: Log): {
   }
   console.groupEnd();
 
-  return { sessions, errors, metadata };
+  return { sessions, errors, metadata, shortcuts };
 }
 
 export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {

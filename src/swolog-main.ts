@@ -14,7 +14,7 @@ import "./log-view";
 import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
 
-const VERSION = "0.0.20";
+const VERSION = "0.0.19";
 
 /**
  * Main App element.
