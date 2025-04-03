@@ -4,7 +4,8 @@ import { consume } from "@lit/context";
 
 import { type IDB, dbContext } from "./indexdb-context";
 import { Task } from "@lit/task";
-import { Log } from "./lib/data";
+import { Log, LogConfig } from "./lib/data";
+import { getConfigForLog } from "./lib/log-config";
 import * as mixin from "./css/mixins";
 import * as dim from "./css/dimensions";
 import * as color from "./css/colors";
@@ -154,9 +155,9 @@ export class LogSelect extends LitElement {
     }
   }
 
-  private _dispatchSelectedLog(log: Log) {
+  private _dispatchSelectedLog(log: Log, config: LogConfig) {
     const options = {
-      detail: { log },
+      detail: { log, config },
       bubbles: true,
       composed: true,
     };
@@ -193,8 +194,9 @@ export class LogSelect extends LitElement {
         console.log(`Loading workout log ${logId}`);
         const log = await this.db.selectById<Log>("Log", logId);
         console.log(`Loaded`, log);
+        const config = await getConfigForLog(logId);
         if (log) {
-          this._dispatchSelectedLog(log);
+          this._dispatchSelectedLog(log, config);
         }
       },
       args: () => [this.logId],

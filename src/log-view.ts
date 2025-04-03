@@ -8,7 +8,7 @@ import { provide } from "@lit/context";
 
 import { cacheContext } from "./lift-cache-context";
 import { type IDB, dbContext } from "./indexdb-context";
-import { Lift, Log, Session } from "./lib/data";
+import { Lift, Log, LogConfig, Session } from "./lib/data";
 import { LiftCache } from "./lib/lift-cache";
 import { getLineOnCursor } from "./lib/textarea-utils";
 import * as mixin from "./css/mixins";
@@ -43,6 +43,7 @@ export class LogView extends LitElement {
   private db?: IDB;
 
   @property({ attribute: false }) log!: Log;
+  @property({ attribute: false }) config!: LogConfig;
 
   @provide({ context: cacheContext })
   cache: LiftCache = new LiftCache([]);
@@ -58,8 +59,6 @@ export class LogView extends LitElement {
 
   @query("history-log") historyLog?: HistoryLog;
   @query(".current") currentTextArea?: HTMLTextAreaElement;
-
-  private shortcuts = new Map<string, string>();
 
   parser = new ComlinkWorker<typeof import("./worker-parser")>(
     new URL("./worker-parser", import.meta.url),
@@ -473,7 +472,7 @@ export class LogView extends LitElement {
   private async showHintsFromText(text: string) {
     let date = Temporal.Now.plainDateISO().toString();
     try {
-      const lift = await this.parser.parseLift(text, this.shortcuts);
+      const lift = await this.parser.parseLift(text, this.config.shortcuts);
       this.selectedLift = {
         ...lift,
         date,
@@ -501,7 +500,7 @@ export class LogView extends LitElement {
         continue;
       }
       try {
-        const lift = await this.parser.parseLift(line, this.shortcuts);
+        const lift = await this.parser.parseLift(line, this.config.shortcuts);
         session.lifts.push(lift);
       } catch (e: unknown) {}
     }
@@ -524,11 +523,10 @@ export class LogView extends LitElement {
   }
 
   private _parseLogTask = new Task(this, {
-    task: async ([log], {}) => {
-      const { sessions, errors, metadata, shortcuts } =
-        await this.parser.parseLog(log);
+    task: async ([log, config], {}) => {
+      const { sessions, errors, metadata } =
+        await this.parser.parseLog(log, config);
       this.cache.init(sessions);
-      this.shortcuts = shortcuts;
 
       const annotations = new Map<number, Annotation[]>();
       for (const [line, text] of errors) {
@@ -579,7 +577,7 @@ export class LogView extends LitElement {
 
       return { historyText, currentText, annotations };
     },
-    args: () => [this.log],
+    args: () => [this.log, this.config] as const,
   });
 
   protected override willUpdate(_changedProperties: PropertyValues): void {

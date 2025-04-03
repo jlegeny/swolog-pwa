@@ -4,7 +4,7 @@ import { provide } from "@lit/context";
 
 import { IDB } from "./lib/idb";
 import { dbContext } from "./indexdb-context";
-import { Log } from "./lib/data";
+import { Log, LogConfig } from "./lib/data";
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -13,6 +13,7 @@ import "./log-select";
 import "./log-view";
 import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
+import { getConfigForLog } from "./lib/log-config";
 
 const VERSION = "0.0.20";
 
@@ -25,6 +26,7 @@ export class SwologMain extends LitElement {
   db = new IDB();
 
   @state() currentLog?: Log;
+  @state() currentConfig?: LogConfig;
 
   @query("pwa-badge") pwaBadge?: PwaBadge;
 
@@ -74,13 +76,15 @@ export class SwologMain extends LitElement {
   `;
 
   private renderLog() {
-    if (!this.currentLog) {
+    if (!this.currentLog || !this.currentConfig) {
       return nothing;
     }
     return html`<log-view
       .log=${this.currentLog}
+      .config=${this.currentConfig}
       @close=${() => {
         this.currentLog = undefined;
+        this.currentConfig = undefined;
         history.pushState(null, "", "/swolog");
       }}
     ></log-view>`;
@@ -89,9 +93,10 @@ export class SwologMain extends LitElement {
   private renderLogSelect() {
     return html`
       <log-select
-        @selected-log=${(e: { detail: { log: Log } }) => {
+        @selected-log=${(e: { detail: { log: Log; config: LogConfig } }) => {
           console.debug(`Selected workout ${e.detail.log.id}`);
           this.currentLog = e.detail.log;
+          this.currentConfig = e.detail.config;
           history.pushState(null, "", `/swolog/#${this.currentLog.id}`);
         }}
       ></log-select>
@@ -120,8 +125,10 @@ export class SwologMain extends LitElement {
       console.debug(`Loading workout log ${logId}`);
       const log = await this.db.selectById<Log>("Log", logId);
       console.debug(`Loaded`, log);
-      if (log) {
+      const config = await getConfigForLog(logId);
+      if (log && config) {
         this.currentLog = log;
+        this.currentConfig = config;
       }
     }
     this.pwaBadge?.forceRefresh();

@@ -1,9 +1,10 @@
-import { Log, Set, Session, Lift } from "./data";
+import { Log, LogConfig, Set, Session, Lift } from "./data";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
 const RE_WEIGHT = /(?<mod>[+-])?(?<weight>\d+(?:\.\d+)?)/;
-const RE_REP = /^(?:(?<single>\d+)|(?:(?<seconds>\d+)s)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
+const RE_REP =
+  /^(?:(?<single>\d+)|(?:(?<seconds>\d+)s)|(?<multi>\d+(?:\/\d+)+)|(?<myo>\d+(?:\+\d+)+))$/;
 const RE_DURATION = /(?<minutes>\d+)'/;
 
 enum ParseErrorType {
@@ -31,16 +32,18 @@ export interface ParsingMetadata {
   lastSessionStartLine?: number;
 }
 
-export function parseLog(log: Log): {
+export function parseLog(
+  log: Log,
+  config: LogConfig
+): {
   sessions: Session[];
   errors: Map<number, string>;
   metadata: ParsingMetadata;
-  shortcuts: Map<string, string>;
 } {
   const sessions: Session[] = [];
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
-  const shortcuts = new Map<string, string>();
+  const shortcuts = config.shortcuts;
 
   console.group(`Parsing log ${log.id}`);
 
@@ -136,7 +139,7 @@ export function parseLog(log: Log): {
   }
   console.groupEnd();
 
-  return { sessions, errors, metadata, shortcuts };
+  return { sessions, errors, metadata };
 }
 
 export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
@@ -194,10 +197,10 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
       weights.push(Number(match.groups.weight));
     }
     const groupRepsStr = str.slice(match[0].length).trim();
-    if (groupRepsStr === '') {
+    if (groupRepsStr === "") {
       continue group;
     }
-    const repsStr = groupRepsStr.trim().replace(/,$/, '').split(/,\s+/);
+    const repsStr = groupRepsStr.trim().replace(/,$/, "").split(/,\s+/);
     for (const repStr of repsStr) {
       const match = RE_REP.exec(repStr.trim());
       if (!match) {
@@ -231,7 +234,6 @@ export function parseLift(line: string, shortcuts?: Map<string, string>): Lift {
             seconds: time,
           },
         });
- 
       } else if (match.groups?.myo) {
         const individualReps = match.groups.myo
           .split("+")
