@@ -8,7 +8,8 @@ import { provide } from "@lit/context";
 
 import { cacheContext } from "./lift-cache-context";
 import { type IDB, dbContext } from "./indexdb-context";
-import { Lift, Log, LogConfig, Session } from "./lib/data";
+import { Lift, Log, Session } from "./lib/data";
+import { LogConfig } from "./lib/log-config";
 import { LiftCache } from "./lib/lift-cache";
 import { getLineOnCursor } from "./lib/textarea-utils";
 import * as mixin from "./css/mixins";
