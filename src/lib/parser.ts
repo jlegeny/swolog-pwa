@@ -1,4 +1,5 @@
-import { Log, LogConfig, Set, Session, Lift } from "./data";
+import { Log, Set, Session, Lift } from "./data";
+import { LogConfig } from "./log-config";
 
 const RE_DATE = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
 const RE_SHORTCUT = /(?<shortcut>\w+)\s*=\s*(?<expansion>[\w#]+)/;
@@ -44,6 +45,7 @@ export function parseLog(
   const errors = new Map<number, string>();
   const metadata: ParsingMetadata = {};
   const shortcuts = config.shortcuts;
+  console.log(shortcuts);
 
   console.group(`Parsing log ${log.id}`);
 

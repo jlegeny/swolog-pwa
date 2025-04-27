@@ -4,7 +4,8 @@ import { provide } from "@lit/context";
 
 import { IDB } from "./lib/idb";
 import { dbContext } from "./indexdb-context";
-import { Log, LogConfig } from "./lib/data";
+import { Log } from "./lib/data";
+import { LogConfig } from "./lib/log-config";
 
 import * as color from "./css/colors";
 import * as dim from "./css/dimensions";
@@ -15,7 +16,7 @@ import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
 import { getConfigForLog } from "./lib/log-config";
 
-const VERSION = "0.0.20";
+const VERSION = "0.0.21";
 
 /**
  * Main App element.

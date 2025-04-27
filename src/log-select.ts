@@ -4,8 +4,8 @@ import { consume } from "@lit/context";
 
 import { type IDB, dbContext } from "./indexdb-context";
 import { Task } from "@lit/task";
-import { Log, LogConfig } from "./lib/data";
-import { getConfigForLog } from "./lib/log-config";
+import { Log } from "./lib/data";
+import { getConfigForLog, LogConfig } from "./lib/log-config";
 import * as mixin from "./css/mixins";
 import * as dim from "./css/dimensions";
 import * as color from "./css/colors";

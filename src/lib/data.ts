@@ -5,10 +5,7 @@ export interface Log {
   text: string;
 }
 
-export interface LogConfig {
-  // Shortcuts.
-  shortcuts: Map<string, string>;
-}
+
 
 export interface Session {
   date: string;
