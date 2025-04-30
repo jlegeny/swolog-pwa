@@ -16,7 +16,7 @@ import "./pwa-badge";
 import { PwaBadge } from "./pwa-badge";
 import { getConfigForLog } from "./lib/log-config";
 
-const VERSION = "0.0.21";
+const VERSION = "0.0.22";
 
 /**
  * Main App element.
