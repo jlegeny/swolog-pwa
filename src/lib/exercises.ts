@@ -181,7 +181,7 @@ export const exercises: Exercise[] = [
     name: "T-Bar Row",
     shorthand: "TBRow",
     target: [Muscle.lats],
-    auxiliary: [Muscle.traps, Muscle.biceps, Muscle.lowerBack],
+    auxiliary: [Muscle.traps, Muscle.biceps, Muscle.lowerBack, Muscle.rearDeltoids],
     modifiers: [barbell, machine],
   },
   {
@@ -310,6 +310,13 @@ export const exercises: Exercise[] = [
     modifiers: [machine],
   },
   {
+    name: "Front Squat",
+    shorthand: "FSQ",
+    target: [Muscle.quads],
+    auxiliary: [Muscle.glutes, Muscle.hamstrings, Muscle.lowerBack],
+    modifiers: [barbell, dumbbell],
+  },
+  {
     name: "Lunge",
     shorthand: "Lunge",
     target: [Muscle.quads, Muscle.glutes],
@@ -377,7 +384,7 @@ export const exercises: Exercise[] = [
     name: "Adductor",
     shorthand: "ADD",
     target: [Muscle.adductor],
-    modifiers: [machine],
+    modifiers: [machine, seated, standing],
   },
   {
     name: "Abductor",
@@ -421,6 +428,13 @@ export const exercises: Exercise[] = [
     shorthand: "Crunch",
     target: [Muscle.abs],
     modifiers: [bodyWeight, cable],
+  },
+  {
+    name: "Candlestick",
+    shorthand: "Candle",
+    target: [Muscle.abs],
+    auxiliary: [Muscle.glutes, Muscle.hamstrings],
+    modifiers: [bodyWeight],
   },
   {
     name: "Russian Twist",
